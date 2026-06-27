@@ -1,5 +1,8 @@
 package com.kapiki_akapikebula.app.service;
 
+import com.kapiki_akapikebula.app.dto.LoginRequest;
+import com.kapiki_akapikebula.app.dto.RegisterRequest;
+import com.kapiki_akapikebula.app.dto.UserResponse;
 import com.kapiki_akapikebula.app.model.User;
 import com.kapiki_akapikebula.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,22 +21,26 @@ public class UserService {
     private JwtUtil jwtUtil;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    public User registerUser(User user) {
-        Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
+
+    public UserResponse registerUser(RegisterRequest request) {
+        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
         if (existingUser.isPresent()) {
             throw new RuntimeException("A user with this email address already exists!");
         }
 
-        String hashedPassword = passwordEncoder.encode(user.getPasswordHash());
-        user.setPasswordHash(hashedPassword);
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
-        return userRepository.save(user);
+
+        User savedUser = userRepository.save(user);
+        return new UserResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getCreatedAt());
     }
-    public String loginUser(String email, String password) {
+    public String loginUser(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("A user with this email not found!"));
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("A user with this email not found!"));
-
-        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new RuntimeException("incorrect password!");
         }
 
