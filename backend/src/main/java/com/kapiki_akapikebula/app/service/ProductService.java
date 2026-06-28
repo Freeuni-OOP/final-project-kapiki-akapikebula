@@ -1,4 +1,4 @@
-package service;
+package com.kapiki_akapikebula.app.service;
 
 import com.kapiki_akapikebula.app.dto.ProductListingDto;
 import com.kapiki_akapikebula.app.model.ShopProducts;
@@ -22,7 +22,7 @@ public class ProductService {
 
         return listings.stream()
                 .map(listing -> new ProductListingDto(
-                        listing.getShop().getName(),
+                        listing.getShop() != null ? listing.getShop().getName() : "Unknown Shop",
                         listing.getPrice(),
                         listing.getStockStatus(),
                         listing.getProductUrl()

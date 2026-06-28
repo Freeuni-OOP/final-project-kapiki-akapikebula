@@ -1,10 +1,8 @@
-package controller;
-
-
+package com.kapiki_akapikebula.app.controller;
 
 import com.kapiki_akapikebula.app.dto.ProductListingDto;
 import org.springframework.web.bind.annotation.*;
-import service.ProductService;
+import com.kapiki_akapikebula.app.service.ProductService;
 
 import java.util.List;
 
