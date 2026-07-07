@@ -12,3 +12,5 @@ target/
 Thumbs.db
 
 .env
+
+.ai/
