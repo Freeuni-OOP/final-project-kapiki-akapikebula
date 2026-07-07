@@ -25,7 +25,6 @@ public class ScheduledScraperRunner {
     private final ScraperService scraperService;
 
     @Scheduled(fixedDelay = 43200000)
-    @Transactional
     public void runScrapingJobs() {
         log.info("Starting scheduled scraping job...");
 
@@ -43,12 +42,18 @@ public class ScheduledScraperRunner {
                     PriceHistory history = new PriceHistory();
                     history.setProduct(prod.getProduct());
                     history.setPrice(newPrice);
-
                     priceHistoryRepository.save(history);
+                    
                     prod.setPrice(newPrice);
                     prod.setLastUpdated(LocalDateTime.now());
                     shopProductsRepository.save(prod);
                 }
+                
+                Thread.sleep(1000);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                log.error("Scraping job interrupted", ie);
+                break;
             } catch (Exception e) {
                 log.error("Failed to scrape and update URL: {}. Error: {}",
                         prod.getProductUrl(), e.getMessage());
