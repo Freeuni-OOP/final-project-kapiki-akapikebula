@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: gadget_price_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: gadget_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: gadget_user
+      MYSQL_PASSWORD: gadget_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

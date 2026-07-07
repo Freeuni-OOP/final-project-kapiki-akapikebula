@@ -3,5 +3,6 @@ CREATE TABLE price_history (
     product_id BIGINT NOT NULL ,
     price DECIMAL(10, 2) NOT NULL,
     recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
     CONSTRAINT fk_price_history_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
