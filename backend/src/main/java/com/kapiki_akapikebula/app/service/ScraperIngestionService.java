@@ -27,7 +27,7 @@ public class ScraperIngestionService {
     public void ingest(List<StoreListing> listings, String shopName) {
 
         // Look up the shop once — fails loud if the shop isn't in the DB yet
-        Shop shop = (Shop) shopRepository.findByName(shopName)
+        Shop shop = shopRepository.findByName(shopName)
                 .orElseThrow(() -> new RuntimeException(
                         "Shop not found: " + shopName + ". Check your V9 migration ran correctly."));
 
