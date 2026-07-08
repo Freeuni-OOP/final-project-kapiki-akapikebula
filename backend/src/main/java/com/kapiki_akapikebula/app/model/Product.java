@@ -34,4 +34,7 @@ public class Product {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<ShopProducts> shopProducts;
+
+    @Column(name = "match_key", unique = true)
+    private String matchKey;
 }
