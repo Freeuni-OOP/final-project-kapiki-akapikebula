@@ -23,29 +23,26 @@ public class ScheduledScraperRunner {
     private final ShopProductsRepository shopProductsRepository;
     private final PriceHistoryRepository priceHistoryRepository;
     private final ScraperService scraperService;
-    private final SeedRunner seedRunner;          // inject the seed runner
+    private final SeedRunner seedRunner;
 
-    // Runs every 12 hours — discovers new products AND updates existing prices
     @Scheduled(fixedDelay = 43200000)
     public void runScrapingJobs() {
 
-        // --- Job 1: Discover and insert new products ---
+        
         log.info("Starting product discovery...");
         seedRunner.run();
         log.info("Product discovery complete.");
-
-        // --- Job 2: Update prices of products already in DB ---
+        
         log.info("Starting price update job...");
 
         List<ShopProducts> listings = shopProductsRepository.findAll();
 
         for (ShopProducts prod : listings) {
             try {
-                BigDecimal newPrice = scraperService.scrapeLatestPrice(
-                        prod.getProductUrl(), prod.getPrice());
+                BigDecimal newPrice = scraperService.scrapeLatestPrice(prod.getProductUrl(), prod.getPrice());
 
                 if (newPrice != null && prod.getPrice().compareTo(newPrice) != 0) {
-                    log.info("Price changed for {}: {} -> {}",
+                    log.info("Price changed for URL {}: Old: {} -> New: {}",
                             prod.getProductUrl(), prod.getPrice(), newPrice);
 
                     PriceHistory history = new PriceHistory();
@@ -70,6 +67,7 @@ public class ScheduledScraperRunner {
             }
         }
 
+        log.info("Finished scheduled scraping job.");
         log.info("Price update job complete.");
     }
 }
