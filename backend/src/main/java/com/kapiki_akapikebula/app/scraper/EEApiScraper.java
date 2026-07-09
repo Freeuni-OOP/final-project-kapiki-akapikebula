@@ -106,8 +106,7 @@ public class EEApiScraper extends ApiScraper {
 
     // ── Parse search result + fetch specs ────────────────────────────────────
 
-    private StoreListing parseSearchResult(WebDriver driver, String token, JsonObject p)
-            throws Exception {
+    private StoreListing parseSearchResult(WebDriver driver, String token, JsonObject p) {
 
         int    id    = p.get("id").getAsInt();
         String name  = p.get("name").getAsString();
@@ -118,11 +117,9 @@ public class EEApiScraper extends ApiScraper {
         String route = BASE_URL + "/" + p.get("routeEn").getAsString();
         boolean inStock = p.get("storageQuantity").getAsInt() > 0;
 
-        StoreListing listing = new StoreListing(
-                String.valueOf(id), STORE_NAME, name, price, prev, inStock, img, route);
-
         // listing.setAttributes(fetchSpecs(driver, token, id));
-        return listing;
+        return new StoreListing(
+                String.valueOf(id), STORE_NAME, name, price, prev, inStock, img, route);
     }
 
     private Map<String, String> fetchSpecs(WebDriver driver, String token, int id)
