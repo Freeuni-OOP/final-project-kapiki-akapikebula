@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 function Navbar({ user, setUser }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const navigate = useNavigate();
+    const dropdownRef = useRef(null);
 
     const handleLogout = () => {
         setUser(null);
@@ -12,17 +13,26 @@ function Navbar({ user, setUser }) {
         navigate('/');
     };
 
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setDropdownOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
     return (
-        <nav style={styles.nav}>
+        <header style={styles.header}>
             <div style={styles.container}>
                 <Link to="/" style={styles.logo}>
-                    🏷️ PriceTracker
+                    🪙 <span style={{ color: '#2563eb' }}>Kapiki</span> Akapikebula
                 </Link>
 
                 <div style={styles.menu}>
                     {user ? (
-                        /* თუ იუზერი ავტორიზებულია -> ჩანს იუზერნეიმი და Dropdown */
-                        <div style={styles.userContainer}>
+                        <div style={styles.userContainer} ref={dropdownRef}>
                             <button
                                 onClick={() => setDropdownOpen(!dropdownOpen)}
                                 style={styles.userBtn}
@@ -32,39 +42,37 @@ function Navbar({ user, setUser }) {
 
                             {dropdownOpen && (
                                 <div style={styles.dropdown}>
-                                    <Link to="/cart" style={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
-                                        Cart
-                                    </Link>
                                     <Link to="/watchlist" style={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
-                                        Watchlist
+                                        ⭐ Watchlist
                                     </Link>
                                     <Link to="/settings" style={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
-                                        Settings
+                                        ⚙️ Settings
                                     </Link>
                                     <hr style={styles.divider} />
                                     <button onClick={handleLogout} style={styles.logoutBtn}>
-                                        Logout
+                                        🚪 Sign Out
                                     </button>
                                 </div>
                             )}
                         </div>
                     ) : (
-                        /* თუ იუზერი არ არის შესული -> ჩანს Login / Register */
                         <div style={styles.authLinks}>
-                            <Link to="/login" style={styles.loginLink}>Login</Link>
-                            <Link to="/register" style={styles.registerBtn}>Register</Link>
+                            <Link to="/login" style={styles.loginBtn}>Login</Link>
                         </div>
                     )}
                 </div>
             </div>
-        </nav>
+        </header>
     );
 }
 
 const styles = {
-    nav: {
+    header: {
         backgroundColor: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
         padding: '12px 0',
     },
     container: {
@@ -72,13 +80,14 @@ const styles = {
         margin: '0 auto',
         padding: '0 20px',
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '20px',
     },
     logo: {
-        fontSize: '20px',
-        fontWeight: '700',
-        color: '#2563eb',
+        fontSize: '22px',
+        fontWeight: 'bold',
+        color: '#1e293b',
         textDecoration: 'none',
     },
     menu: {
@@ -89,13 +98,13 @@ const styles = {
         position: 'relative',
     },
     userBtn: {
-        backgroundColor: '#eff6ff',
-        color: '#2563eb',
-        border: '1px solid #bfdbfe',
+        backgroundColor: '#f1f5f9',
+        border: 'none',
         padding: '8px 16px',
-        borderRadius: '20px',
+        borderRadius: '8px',
         fontSize: '14px',
         fontWeight: '600',
+        color: '#1e293b',
         cursor: 'pointer',
     },
     dropdown: {
@@ -136,23 +145,16 @@ const styles = {
     },
     authLinks: {
         display: 'flex',
-        gap: '12px',
-        alignItems: 'center',
+        gap: '10px',
     },
-    loginLink: {
-        color: '#475569',
+    loginBtn: {
         textDecoration: 'none',
-        fontWeight: '600',
-        fontSize: '14px',
-    },
-    registerBtn: {
         backgroundColor: '#2563eb',
         color: '#ffffff',
-        textDecoration: 'none',
         padding: '8px 16px',
-        borderRadius: '8px',
-        fontSize: '14px',
+        borderRadius: '6px',
         fontWeight: '600',
+        fontSize: '14px',
     },
 };
 
