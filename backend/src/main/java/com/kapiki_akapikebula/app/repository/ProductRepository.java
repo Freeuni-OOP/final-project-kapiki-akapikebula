@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -41,4 +42,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     );
 
     Optional<Product> findByMatchKey(String matchKey);
+    // Used to narrow down candidates before running the fuzzy comparison
+    List<Product> findByNameContainingIgnoreCase(String token);
 }
