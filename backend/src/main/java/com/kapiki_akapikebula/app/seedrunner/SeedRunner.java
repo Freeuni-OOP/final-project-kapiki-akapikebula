@@ -23,14 +23,14 @@ public class SeedRunner {
     private final EEApiScraper eeScraper;
 
     private static final List<String> SEED_QUERIES = List.of(
-            "samsung", "apple", "laptop", "tablet", "tv",
-            "fridge", "washing machine", "headphones", "camera"
+            "samsung" //"apple", "laptop", "tablet", "tv",
+//            "fridge", "washing machine", "headphones", "camera"
     );
 
     public void run() {
         log.info("Starting MULTITHREADED product discovery...");
 
-        ExecutorService executor = Executors.newFixedThreadPool(SEED_QUERIES.size() * 2);
+        ExecutorService executor = Executors.newFixedThreadPool(3);
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
