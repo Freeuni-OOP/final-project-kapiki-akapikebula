@@ -1,17 +1,33 @@
 package com.kapiki_akapikebula.app.scraper;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Map;
 
 public class StoreListing {
+    // Getters
+    @Getter
     private String id;
+    @Getter
     private String storeName;
+    @Getter
     private String productName;
+    @Getter
     private double price;
+    @Getter
     private Double previousPrice;
     private Boolean inStock;
+    @Getter
     private String imageUrl;
+    @Getter
     private String route;
+    // Setters for fields populated after construction
+    @Getter
+    @Setter
     private String matchKey;
+    @Getter
+    @Setter
     private Map<String, String> attributes;
 
     public StoreListing(String id, String storeName, String productName,
@@ -27,21 +43,7 @@ public class StoreListing {
         this.route = route;
     }
 
-    // Getters
-    public String getId()           { return id; }
-    public String getStoreName()    { return storeName; }
-    public String getProductName()  { return productName; }
-    public double getPrice()        { return price; }
-    public Double getPreviousPrice(){ return previousPrice; }
     public Boolean isInStock()      { return inStock; }
-    public String getImageUrl()     { return imageUrl; }
-    public String getRoute()        { return route; }
-    public String getMatchKey()     { return matchKey; }
-    public Map<String, String> getAttributes() { return attributes; }
-
-    // Setters for fields populated after construction
-    public void setMatchKey(String matchKey)             { this.matchKey = matchKey; }
-    public void setAttributes(Map<String, String> attrs) { this.attributes = attrs; }
 
     @Override
     public String toString() {
