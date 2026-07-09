@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
@@ -19,32 +22,32 @@ public class SeedRunner {
     private final EEApiScraper eeScraper;
 
     private static final List<String> SEED_QUERIES = List.of(
-            "samsung",
-            "apple",
-            "laptop",
-            "tablet",
-            "tv",
-            "fridge",
-            "washing machine",
-            "headphones",
-            "camera"
+            "samsung", "apple", "laptop", "tablet", "tv",
+            "fridge", "washing machine", "headphones", "camera"
     );
 
-    // Call this method to scrape fresh products into the DB
     public void run() {
-        for (String query : SEED_QUERIES) {
-            try {
-                log.info("Scraping Zoommer for: {}", query);
-                ingestionService.ingest(zoommerScraper.search(query), "Zoommer");
+        log.info("Starting MULTITHREADED product discovery...");
+        ExecutorService executor = Executors.newFixedThreadPool(SEED_QUERIES.size());
 
-                log.info("Scraping EE for: {}", query);
-                ingestionService.ingest(eeScraper.search(query), "EE");
+        List<CompletableFuture<Void>> futures = SEED_QUERIES.stream()
+                .map(query -> CompletableFuture.runAsync(() -> processSeed(query), executor))
+                .toList();
 
-            } catch (Exception e) {
-                log.error("Seed query [{}] failed: {}", query, e.getMessage());
-                // Continue with next query even if this one failed
-            }
-        }
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        executor.shutdown();
         log.info("Seed run complete.");
+    }
+    private void processSeed(String query) {
+        try {
+            log.info("Scraping Zoommer for: {}", query);
+            ingestionService.ingest(zoommerScraper.search(query), "Zoommer");
+
+            log.info("Scraping EE for: {}", query);
+            ingestionService.ingest(eeScraper.search(query), "EE");
+        } catch (Exception e) {
+            log.error("Seed query [{}] failed: {}", query, e.getMessage());
+        }
     }
 }
