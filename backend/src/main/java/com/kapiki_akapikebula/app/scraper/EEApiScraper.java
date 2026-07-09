@@ -27,6 +27,8 @@ public class EEApiScraper extends ApiScraper {
                 "--disable-dev-shm-usage");
         WebDriver driver = new ChromeDriver(opts);
 
+        driver.manage().timeouts().scriptTimeout(java.time.Duration.ofSeconds(60));
+
         try {
             // Load the site once to establish session
             driver.get(BASE_URL);
