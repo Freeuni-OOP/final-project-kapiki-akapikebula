@@ -1,7 +1,7 @@
 package com.kapiki_akapikebula.app.service;
 
-import com.kapiki_akapikebula.app.dto.ProductListingDto;
-import com.kapiki_akapikebula.app.dto.ProductSearchResult;
+import com.kapiki_akapikebula.app.dto.ProductListingResponse;
+import com.kapiki_akapikebula.app.dto.ProductSearchResponse;
 import com.kapiki_akapikebula.app.model.Product;
 import com.kapiki_akapikebula.app.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class ProductSearchService {
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("name", "brand");
 
-    public Page<ProductSearchResult> search(
+    public Page<ProductSearchResponse> search(
             String query,
             BigDecimal minPrice,
             BigDecimal maxPrice,
@@ -47,13 +46,13 @@ public class ProductSearchService {
                 keyword, minPrice, maxPrice, pageable
         );
 
-        List<ProductSearchResult> results = matchingProducts.getContent().stream()
+        List<ProductSearchResponse> results = matchingProducts.getContent().stream()
                 .map(product -> {
 
-                    List<ProductListingDto> listingDtos = product.getShopProducts().stream()
+                    List<ProductListingResponse> listingDtos = product.getShopProducts().stream()
                             .filter(sp -> sp.getPrice() != null)
                             .sorted(Comparator.comparing(sp -> sp.getPrice()))
-                            .map(sp -> new ProductListingDto(
+                            .map(sp -> new ProductListingResponse(
                                     sp.getShop() != null ? sp.getShop().getName() : "Unknown Shop",
                                     sp.getPrice(),
                                     sp.getStockStatus(),
@@ -63,9 +62,9 @@ public class ProductSearchService {
 
                     BigDecimal lowestPrice = listingDtos.isEmpty()
                             ? null
-                            : listingDtos.get(0).price();
+                            : listingDtos.get(0).getPrice();
 
-                    return new ProductSearchResult(
+                    return new ProductSearchResponse(
                             product.getId(),
                             product.getName(),
                             product.getBrand(),

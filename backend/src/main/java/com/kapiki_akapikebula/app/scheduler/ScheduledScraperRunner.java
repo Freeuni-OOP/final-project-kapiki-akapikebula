@@ -1,11 +1,6 @@
 package com.kapiki_akapikebula.app.scheduler;
 
-import com.kapiki_akapikebula.app.model.PriceHistory;
-import com.kapiki_akapikebula.app.model.ShopProducts;
-import com.kapiki_akapikebula.app.repository.PriceHistoryRepository;
-import com.kapiki_akapikebula.app.repository.ShopProductsRepository;
 import com.kapiki_akapikebula.app.seedrunner.SeedRunner;
-import com.kapiki_akapikebula.app.service.ScraperService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,54 +15,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScheduledScraperRunner {
 
-    private final ShopProductsRepository shopProductsRepository;
-    private final PriceHistoryRepository priceHistoryRepository;
-    private final ScraperService scraperService;
     private final SeedRunner seedRunner;
 
     @Scheduled(fixedDelay = 43200000)
     public void runScrapingJobs() {
 
-        
-        log.info("Starting product discovery...");
-        seedRunner.run();
-        log.info("Product discovery complete.");
-        
-        log.info("Starting price update job...");
-
-        List<ShopProducts> listings = shopProductsRepository.findAll();
-
-        for (ShopProducts prod : listings) {
-            try {
-                BigDecimal newPrice = scraperService.scrapeLatestPrice(prod.getProductUrl(), prod.getPrice());
-
-                if (newPrice != null && prod.getPrice().compareTo(newPrice) != 0) {
-                    log.info("Price changed for URL {}: Old: {} -> New: {}",
-                            prod.getProductUrl(), prod.getPrice(), newPrice);
-
-                    PriceHistory history = new PriceHistory();
-                    history.setProduct(prod.getProduct());
-                    history.setPrice(newPrice);
-                    priceHistoryRepository.save(history);
-
-                    prod.setPrice(newPrice);
-                    prod.setLastUpdated(LocalDateTime.now());
-                    shopProductsRepository.save(prod);
-                }
-
-                Thread.sleep(1000);
-
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                log.error("Price update job interrupted", ie);
-                break;
-            } catch (Exception e) {
-                log.error("Failed to update price for URL: {}. Error: {}",
-                        prod.getProductUrl(), e.getMessage());
-            }
+        log.info("Starting scheduled product discovery and product update job...");
+        try{
+            seedRunner.run();
+            log.info("Scheduled scraping job completed successfully");
+        } catch(Exception e){
+            log.error("Error occurred during scheduled scraping job.");
         }
-
-        log.info("Finished scheduled scraping job.");
-        log.info("Price update job complete.");
     }
 }

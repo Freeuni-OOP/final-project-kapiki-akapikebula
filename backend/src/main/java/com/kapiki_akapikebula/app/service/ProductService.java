@@ -1,6 +1,6 @@
 package com.kapiki_akapikebula.app.service;
 
-import com.kapiki_akapikebula.app.dto.ProductListingDto;
+import com.kapiki_akapikebula.app.dto.ProductListingResponse;
 import com.kapiki_akapikebula.app.model.ShopProducts;
 import com.kapiki_akapikebula.app.repository.ShopProductsRepository;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ public class ProductService {
     }
 
 
-    public List<ProductListingDto> getProductListings(long productId) {
+    public List<ProductListingResponse> getProductListings(long productId) {
         List<ShopProducts> listings = shopProductsRep.findByProductIdOrderByPriceAsc(productId);
 
         if (listings.isEmpty()) {
@@ -25,7 +25,7 @@ public class ProductService {
         }
         
         return listings.stream()
-                .map(listing -> new ProductListingDto(
+                .map(listing -> new ProductListingResponse(
                         listing.getShop() != null ? listing.getShop().getName() : "Unknown Shop",
                         listing.getPrice(),
                         listing.getStockStatus(),

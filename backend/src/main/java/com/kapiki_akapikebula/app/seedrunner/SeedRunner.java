@@ -28,26 +28,38 @@ public class SeedRunner {
 
     public void run() {
         log.info("Starting MULTITHREADED product discovery...");
-        ExecutorService executor = Executors.newFixedThreadPool(SEED_QUERIES.size());
+        ExecutorService executor = Executors.newFixedThreadPool(SEED_QUERIES.size() * 2);
 
         List<CompletableFuture<Void>> futures = SEED_QUERIES.stream()
-                .map(query -> CompletableFuture.runAsync(() -> processSeed(query), executor))
+                .map(query -> CompletableFuture.runAsync(() -> processSeedParallel(query, executor), executor))
                 .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         executor.shutdown();
-        log.info("Seed run complete.");
+        log.info("Seed run complete. All stores and queries scraped simultaneously.");
     }
-    private void processSeed(String query) {
-        try {
-            log.info("Scraping Zoommer for: {}", query);
-            ingestionService.ingest(zoommerScraper.search(query), "Zoommer");
+    private void processSeedParallel(String query, ExecutorService executor) {
+        CompletableFuture<Void> zoommerTask = CompletableFuture.runAsync(() ->{
+            try{
+                log.info("Scraping Zoommer for: {}", query);
+                ingestionService.ingest(zoommerScraper.search(query), "Zoommer");
+                log.info("Zoommer finished for: {}", query);
+            } catch(Exception e){
+                log.error("Zoommer failed for query [{}]: {}", query, e.getMessage());
+            }
+        }, executor);
 
-            log.info("Scraping EE for: {}", query);
-            ingestionService.ingest(eeScraper.search(query), "EE");
-        } catch (Exception e) {
-            log.error("Seed query [{}] failed: {}", query, e.getMessage());
-        }
+        CompletableFuture<Void> eeTask = CompletableFuture.runAsync(() -> {
+            try {
+                log.info("Scraping EE for: {}", query);
+                ingestionService.ingest(eeScraper.search(query), "EE");
+                log.info("EE finished for: {}", query);
+            } catch (Exception e) {
+                log.error("EE failed for query [{}]: {}", query, e.getMessage());
+            }
+        }, executor);
+
+        CompletableFuture.allOf(zoommerTask, eeTask).join();
     }
 }
