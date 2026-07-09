@@ -10,7 +10,7 @@ function SettingsPage({ user, setUser }) {
         e.preventDefault();
         const updatedUser = { ...user, username, email };
 
-        // განაახლე State და LocalStorage
+
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
 

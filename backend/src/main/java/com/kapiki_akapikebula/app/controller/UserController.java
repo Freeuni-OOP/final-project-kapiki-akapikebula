@@ -22,9 +22,9 @@ public class UserController {
             UserResponse savedUser = userService.registerUser(request);
             return ResponseEntity.ok(savedUser);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An unexpected error occurred during registration."); //er
+            return ResponseEntity.internalServerError().body(java.util.Map.of("error", "An unexpected error occurred during registration."));
         }
     }
 
@@ -34,11 +34,14 @@ public class UserController {
             String token = userService.loginUser(request);
             return ResponseEntity.ok(new AuthResponse(token));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An unexpected error occurred during login.");
+            return ResponseEntity.internalServerError().body(java.util.Map.of("error", "An unexpected error occurred during login."));
         }
     }
+
+
 
     @GetMapping("/registrationConfirm")
     public ResponseEntity<String> confirmRegistration(@RequestParam("token") String token) {
