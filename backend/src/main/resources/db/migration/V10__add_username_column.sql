@@ -1,0 +1,3 @@
+ALTER TABLE users ADD COLUMN username VARCHAR(50);
+ALTER TABLE users ADD COLUMN enabled BOOLEAN;
+

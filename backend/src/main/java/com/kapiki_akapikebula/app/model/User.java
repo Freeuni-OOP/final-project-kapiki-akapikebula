@@ -27,4 +27,10 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Column(nullable = false, unique = false)
+    private String username;
+
+    @Column(nullable = false)
+    private boolean enabled = false;
 }

@@ -39,4 +39,14 @@ public class UserController {
             return ResponseEntity.internalServerError().body("An unexpected error occurred during login.");
         }
     }
+
+    @GetMapping("/registrationConfirm")
+    public ResponseEntity<String> confirmRegistration(@RequestParam("token") String token) {
+        try {
+            String result = userService.verifyToken(token);
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
