@@ -1,13 +1,13 @@
 package com.kapiki_akapikebula.app.controller;
 
-import com.kapiki_akapikebula.app.dto.AuthResponse;
-import com.kapiki_akapikebula.app.dto.LoginRequest;
-import com.kapiki_akapikebula.app.dto.RegisterRequest;
-import com.kapiki_akapikebula.app.dto.UserResponse;
+import com.kapiki_akapikebula.app.dto.*;
 import com.kapiki_akapikebula.app.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -41,8 +41,6 @@ public class UserController {
         }
     }
 
-
-
     @GetMapping("/registrationConfirm")
     public ResponseEntity<String> confirmRegistration(@RequestParam("token") String token) {
         try {
@@ -50,6 +48,22 @@ public class UserController {
             return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request, Principal principal) {
+        try {
+            // Spring Security automatically injects the logged-in user's info into 'principal'
+            // principal.getName() will return the email extracted from the user's JWT token
+            String email = principal.getName();
+
+            userService.changePassword(email, request);
+            return ResponseEntity.ok(Map.of("message", "Password updated successfully."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred."));
         }
     }
 }

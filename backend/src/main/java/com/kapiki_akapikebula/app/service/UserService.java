@@ -1,5 +1,6 @@
 package com.kapiki_akapikebula.app.service;
 
+import com.kapiki_akapikebula.app.dto.ChangePasswordRequest;
 import com.kapiki_akapikebula.app.dto.LoginRequest;
 import com.kapiki_akapikebula.app.dto.RegisterRequest;
 import com.kapiki_akapikebula.app.dto.UserResponse;
@@ -98,5 +99,21 @@ public class UserService {
         tokenRepository.delete(verificationToken);
 
         return "Account verified successfully! You can now log in.";
+    }
+
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
+            throw new RuntimeException("Incorrect old password!");
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
+            throw new RuntimeException("New password cannot be the same as the old password!");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }
