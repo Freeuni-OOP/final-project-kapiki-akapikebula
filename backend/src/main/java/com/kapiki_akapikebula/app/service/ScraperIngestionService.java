@@ -4,7 +4,9 @@ import com.kapiki_akapikebula.app.model.*;
 import com.kapiki_akapikebula.app.repository.*;
 import com.kapiki_akapikebula.app.scraper.StoreListing;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -23,7 +25,7 @@ public class ScraperIngestionService {
     // The ID we inserted in the migration for "Uncategorized"
     private static final long DEFAULT_CATEGORY_ID = 1L;
 
-    @Transactional
+
     public void ingest(List<StoreListing> listings, String shopName) {
 
         // Look up the shop once — fails loud if the shop isn't in the DB yet
@@ -54,7 +56,8 @@ public class ScraperIngestionService {
                 shopName, saved, skipped);
     }
 
-    private void processSingleListing(StoreListing listing, Shop shop, Category defaultCategory) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected void processSingleListing(StoreListing listing, Shop shop, Category defaultCategory) {
 
         // --- Step 1: Build match key ---
         // Lowercase + trim so "Samsung Galaxy S25" and "samsung galaxy s25" are the same product

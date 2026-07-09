@@ -1,7 +1,7 @@
 package com.kapiki_akapikebula.app.controller;
 
-import com.kapiki_akapikebula.app.dto.ProductListingDto;
-import com.kapiki_akapikebula.app.dto.ProductSearchResult;
+import com.kapiki_akapikebula.app.dto.ProductListingResponse;
+import com.kapiki_akapikebula.app.dto.ProductSearchResponse;
 import com.kapiki_akapikebula.app.service.ProductSearchService;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,7 @@ public class ProductController {
     @GetMapping("/{id}/listings")
     public ResponseEntity<?> getProductListings(@PathVariable long id) {
         try {
-            List<ProductListingDto> listings = productService.getProductListings(id);
+            List<ProductListingResponse> listings = productService.getProductListings(id);
             return ResponseEntity.ok(listings);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -37,7 +37,7 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<ProductSearchResult>> search(
+    public ResponseEntity<Page<ProductSearchResponse>> search(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
@@ -46,7 +46,7 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        Page<ProductSearchResult> results = productSearchService.search(
+        Page<ProductSearchResponse> results = productSearchService.search(
                 query, minPrice, maxPrice, sortBy, sortDir, page, size
         );
         return ResponseEntity.ok(results);
