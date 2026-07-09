@@ -23,8 +23,8 @@ public class SeedRunner {
     private final EEApiScraper eeScraper;
 
     private static final List<String> SEED_QUERIES = List.of(
-            "samsung", "apple", "laptop", "tablet", "tv",
-            "fridge", "washing machine", "headphones", "camera"
+            "samsung" //"apple", "laptop", "tablet", "tv",
+//            "fridge", "washing machine", "headphones", "camera"
     );
 
     public void run() {
