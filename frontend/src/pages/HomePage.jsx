@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import ProductCard from '../components/ProductCard';
-import PriceChart from '../components/PriceChart';
-import { getProducts, getProductPriceHistory } from '../api/productApi';
+// 🟢 ამოღებულია PriceChart-ის იმპორტი
+import { getHomeProducts } from '../api/productApi'; // 🟢 ამოღებულია getProductPriceHistory
 
 function HomePage() {
     const [products, setProducts] = useState([]);
-    const [priceHistory, setPriceHistory] = useState([]);
+    // 🟢 ამოღებულია priceHistory სახელმწიფო (state)
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -14,27 +14,13 @@ function HomePage() {
             try {
                 setLoading(true);
 
+                // წამოვიღოთ მხოლოდ დამეჩილი პროდუქტები ჰოუმ ფეიჯისთვის
+                const productsData = await getHomeProducts();
 
-                const productsData = await getProducts();
-
-
-                const productList = Array.isArray(productsData)
-                    ? productsData
-                    : (productsData?.content || []);
-
+                const productList = Array.isArray(productsData) ? productsData : [];
                 setProducts(productList);
 
-
-                if (productList.length > 0) {
-                    try {
-                        const firstProductId = productList[0].productId;
-                        const historyData = await getProductPriceHistory(firstProductId);
-                        setPriceHistory(historyData || []);
-                    } catch (historyErr) {
-                        console.warn("Price history error, but products loaded fine:", historyErr);
-                        setPriceHistory([]);
-                    }
-                }
+                // 🟢 ამოღებულია ისტორიის წამოღების ზედმეტი ბლოკი
 
             } catch (err) {
                 console.error("Error loading home page data:", err);
@@ -57,14 +43,7 @@ function HomePage() {
 
     return (
         <div style={styles.container}>
-            {/* Hero / Price History Card */}
-            <div style={styles.chartCard}>
-                <div style={styles.chartHeader}>
-                    <h2 style={styles.chartTitle}>Market Price Trend (Market Overview)</h2>
-                    <span style={styles.badge}>Live Data</span>
-                </div>
-                <PriceChart data={priceHistory} />
-            </div>
+            {/* 🟢 ჩარტის სექცია (chartCard) წარმატებით ამოღებულია აქედან! */}
 
             {/* Product List Section */}
             <div style={styles.sectionHeader}>
@@ -72,9 +51,9 @@ function HomePage() {
                 <p style={styles.sectionSubtitle}>Compare prices across top Georgian retailers</p>
             </div>
 
-            {/* 🟢 დაზღვევა: .map() გამოიძახება მხოლოდ მაშინ, თუ products მართლაც მასივია */}
+            {/* პროდუქტების სექცია */}
             <div style={styles.grid}>
-                {Array.isArray(products) && products.length > 0 ? (
+                {products.length > 0 ? (
                     products.map((product) => (
                         <ProductCard key={product.id} product={product} />
                     ))
@@ -93,34 +72,7 @@ const styles = {
         padding: '0 20px',
         boxSizing: 'border-box',
     },
-    chartCard: {
-        backgroundColor: '#ffffff',
-        padding: '24px',
-        borderRadius: '12px',
-        border: '1px solid #e2e8f0',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.02)',
-        marginBottom: '40px',
-    },
-    chartHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px',
-    },
-    chartTitle: {
-        margin: 0,
-        fontSize: '20px',
-        color: '#1e293b',
-        fontWeight: '600',
-    },
-    badge: {
-        backgroundColor: '#eff6ff',
-        color: '#2563eb',
-        padding: '4px 10px',
-        borderRadius: '12px',
-        fontSize: '12px',
-        fontWeight: '600',
-    },
+    // 🟢 ჩარტის სტილები ამოღებულია სისუფთავისთვის
     sectionHeader: {
         marginBottom: '24px',
     },

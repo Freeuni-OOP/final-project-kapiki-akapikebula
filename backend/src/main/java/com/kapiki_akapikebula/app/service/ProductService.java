@@ -2,6 +2,7 @@ package com.kapiki_akapikebula.app.service;
 
 import com.kapiki_akapikebula.app.dto.PriceHistoryResponse;
 import com.kapiki_akapikebula.app.dto.ProductListingResponse;
+import com.kapiki_akapikebula.app.dto.MatchedProductDTO; // 👈 შემოვიტანოთ DTO
 import com.kapiki_akapikebula.app.model.PriceHistory;
 import com.kapiki_akapikebula.app.model.Product;
 import com.kapiki_akapikebula.app.model.ShopProducts;
@@ -31,12 +32,17 @@ public class ProductService {
         this.priceHistoryRepository = priceHistoryRepository;
     }
 
+    // 🟢 ახალი სერვის მეთოდი
+    @Transactional(readOnly = true)
+    public List<MatchedProductDTO> getMatchedProductsForHomePage() {
+        // თუ შენს ProductRepository-ში ამ მეთოდს სხვა სახელი ქვია, ჩაწერე ის სახელი
+        return productRepository.findMatchedProductsForHomePage();
+    }
 
     @Transactional(readOnly = true)
     public Map<String, Object> getProductById(long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + id));
-
 
         Map<String, Object> productMap = new HashMap<>();
         productMap.put("id", product.getId());
@@ -55,14 +61,12 @@ public class ProductService {
     }
 
     public List<PriceHistoryResponse> getProductHistory(long productId) {
-
         List<PriceHistory> history = priceHistoryRepository.findByProductIdOrderByRecordedAtAsc(productId);
 
         return history.stream()
                 .map(h -> new PriceHistoryResponse(h.getPrice(), h.getRecordedAt()))
                 .collect(Collectors.toList());
     }
-
 
     public List<ProductListingResponse> getProductListings(long productId) {
         List<ShopProducts> listings = shopProductsRep.findByProductIdOrderByPriceAsc(productId);

@@ -2,6 +2,7 @@ package com.kapiki_akapikebula.app.controller;
 
 import com.kapiki_akapikebula.app.dto.ProductListingResponse;
 import com.kapiki_akapikebula.app.dto.ProductSearchResponse;
+import com.kapiki_akapikebula.app.dto.MatchedProductDTO; // 👈 შემოვიტანოთ DTO
 import com.kapiki_akapikebula.app.service.ProductSearchService;
 import com.kapiki_akapikebula.app.service.ProductService;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,11 @@ public class ProductController {
         this.productSearchService = productSearchService;
     }
 
+    // 🟢 1. ახალი ენდფოინთი ჰოუმ ფეიჯისთვის (Spring პირდაპირ ამას დაამთხვევს და 400-ს აღარ ამოაგდებს)
+    @GetMapping("/home-products")
+    public ResponseEntity<List<MatchedProductDTO>> getHomeProducts() {
+        return ResponseEntity.ok(productService.getMatchedProductsForHomePage());
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@PathVariable long id) {
@@ -36,7 +42,6 @@ public class ProductController {
             return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred."));
         }
     }
-
 
     @GetMapping("/{id}/listings")
     public ResponseEntity<?> getProductListings(@PathVariable long id) {
@@ -50,7 +55,6 @@ public class ProductController {
         }
     }
 
-
     @GetMapping("/{id}/history")
     public ResponseEntity<?> getProductHistory(@PathVariable long id) {
         try {
@@ -61,7 +65,6 @@ public class ProductController {
             return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred."));
         }
     }
-
 
     @GetMapping("/search")
     public ResponseEntity<Page<ProductSearchResponse>> search(
