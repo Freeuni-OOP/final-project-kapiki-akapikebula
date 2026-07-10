@@ -7,7 +7,7 @@ const DEBOUNCE_MS = 350;
 function SearchBar() {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
-    const [fallback, setFallback] = useState([]); // როცა ვერაფერი მოიძებნა
+    const [fallback, setFallback] = useState([]); 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [error, setError] = useState(null);
