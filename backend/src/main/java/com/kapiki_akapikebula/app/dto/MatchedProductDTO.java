@@ -8,4 +8,5 @@ public interface MatchedProductDTO {
     String getImageUrl();
     BigDecimal getMinPrice();
     BigDecimal getMaxPrice();
+    Long getStoresCount();
 }
