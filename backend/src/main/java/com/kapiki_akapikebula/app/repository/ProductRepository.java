@@ -47,11 +47,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByNameContainingIgnoreCase(String token);
 
     @Query("SELECT p.id AS id, p.name AS name, p.imageUrl AS imageUrl, " +
-            "MIN(sp.price) AS minPrice, MAX(sp.price) AS maxPrice " +
-            "FROM Product p " +
-            "JOIN p.shopProducts sp " +
-            "GROUP BY p.id, p.name, p.imageUrl " +
-            "HAVING COUNT(sp.id) > 1")
-    List<MatchedProductDTO> findMatchedProductsForHomePage();
+        "MIN(sp.price) AS minPrice, MAX(sp.price) AS maxPrice, " +
+        "COUNT(sp.id) AS storesCount " +
+        "FROM Product p " +
+        "JOIN p.shopProducts sp " +
+        "GROUP BY p.id, p.name, p.imageUrl " +
+        "HAVING COUNT(sp.id) > 1")
+List<MatchedProductDTO> findMatchedProductsForHomePage();
 
 }
