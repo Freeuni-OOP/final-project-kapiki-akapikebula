@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import PriceChart from '../components/PriceChart';
-
 
 const getStoreMeta = (shopName) => {
     const name = shopName?.toLowerCase() || '';
@@ -19,7 +18,6 @@ const getStoreMeta = (shopName) => {
             bg: '#eff6ff'
         };
     }
-
     return {
         logo: '🏪',
         brandColor: '#475569',
@@ -35,6 +33,9 @@ function ProductDetailsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [watchlistMsg, setWatchlistMsg] = useState('');
+
+
+    const [targetPrice, setTargetPrice] = useState('');
 
     useEffect(() => {
         const fetchProductDetails = async () => {
@@ -81,8 +82,15 @@ function ProductDetailsPage() {
             alert('Please login first to add to your watchlist!');
             return;
         }
+
+
+        if (!targetPrice || isNaN(targetPrice) || Number(targetPrice) <= 0) {
+            setWatchlistMsg('⚠️ Please enter a valid target price.');
+            setTimeout(() => setWatchlistMsg(''), 3000);
+            return;
+        }
+
         const user = JSON.parse(userStr);
-        const currentMinPrice = offers.length > 0 ? Math.min(...offers.map(o => o.price)) : 0;
 
         try {
             const response = await fetch(`http://localhost:8080/api/watchlist`, {
@@ -93,19 +101,22 @@ function ProductDetailsPage() {
                 },
                 body: JSON.stringify({
                     productID: parseInt(id),
-                    targetPrice: currentMinPrice
+                    targetPrice: parseFloat(targetPrice)
                 })
             });
 
             if (response.ok) {
-                setWatchlistMsg('✅ Added to Watchlist!');
+                setWatchlistMsg('Added to Watchlist!');
+                setTargetPrice('');
                 setTimeout(() => setWatchlistMsg(''), 3000);
             } else {
                 const errData = await response.text();
-                setWatchlistMsg(` ${errData || 'Failed to add'}`);
+                setWatchlistMsg(`${errData || 'Failed to add'}`);
+                setTimeout(() => setWatchlistMsg(''), 3000);
             }
         } catch (err) {
             setWatchlistMsg('Error connecting to server.');
+            setTimeout(() => setWatchlistMsg(''), 3000);
         }
     };
 
@@ -115,7 +126,6 @@ function ProductDetailsPage() {
 
     return (
         <div style={styles.container}>
-            {/* ზედა ქარდი: პროდუქტის ინფო */}
             <div style={styles.headerCard}>
                 <div style={styles.imageContainer}>
                     <img src={product.imageUrl} alt={product.name} style={styles.image} />
@@ -125,16 +135,25 @@ function ProductDetailsPage() {
                     <h1 style={styles.title}>{product.name}</h1>
                     <p style={styles.description}>{product.description}</p>
 
+
                     <div style={styles.actionContainer}>
-                        <button onClick={handleAddToWatchlist} style={styles.watchlistBtn}>
-                            ⭐ Add to Watchlist
-                        </button>
+                        <div style={styles.watchlistInputGroup}>
+                            <input
+                                type="number"
+                                placeholder="Target Price (₾)"
+                                value={targetPrice}
+                                onChange={(e) => setTargetPrice(e.target.value)}
+                                style={styles.priceInput}
+                            />
+                            <button onClick={handleAddToWatchlist} style={styles.watchlistBtn}>
+                                ⭐ Add to Watchlist
+                            </button>
+                        </div>
                         {watchlistMsg && <span style={styles.watchlistMsg}>{watchlistMsg}</span>}
                     </div>
                 </div>
             </div>
 
-            {/* ფასების ისტორიის გრაფიკი */}
             <div style={styles.chartSection}>
                 <h2 style={styles.sectionTitle}>Price History</h2>
                 {history.length > 0 ? (
@@ -144,7 +163,6 @@ function ProductDetailsPage() {
                 )}
             </div>
 
-            {/* 🏪 მაღაზიების განახლებული და გალამაზებული სექცია */}
             <div style={styles.offersSection}>
                 <h2 style={styles.sectionTitle}>Available in Stores</h2>
                 <div style={styles.offersList}>
@@ -157,7 +175,6 @@ function ProductDetailsPage() {
                             const store = getStoreMeta(offer.shopName);
                             return (
                                 <div key={index} style={styles.offerRow}>
-                                    {/* მარცხენა მხარე: ლოგო + სახელი */}
                                     <div style={styles.storeBrandBlock}>
                                         {store.logo.startsWith('http') ? (
                                             <img src={store.logo} alt={offer.shopName} style={styles.storeLogo} />
@@ -166,15 +183,11 @@ function ProductDetailsPage() {
                                         )}
                                         <span style={styles.storeName}>{offer.shopName || 'Store'}</span>
                                     </div>
-
-                                    {/* შუა ნაწილი: მარაგის სტატუსი */}
                                     <div>
                                         <span style={offer.stockStatus === 'IN_STOCK' || offer.stockStatus === 'true' || offer.stockStatus === true ? styles.stockBadge : styles.outOfStockBadge}>
                                             {offer.stockStatus === 'IN_STOCK' || offer.stockStatus === 'true' || offer.stockStatus === true ? 'In Stock' : 'Out of Stock'}
                                         </span>
                                     </div>
-
-                                    {/* მარჯვენა მხარე: ფასი + დინამიური ღილაკი */}
                                     <div style={styles.priceActionBlock}>
                                         <span style={styles.offerPrice}>{offer.price} ₾</span>
                                         <a
@@ -184,7 +197,7 @@ function ProductDetailsPage() {
                                             style={{
                                                 ...styles.buyBtn,
                                                 backgroundColor: store.brandColor,
-                                                boxShadow: `0 4px 12px ${store.brandColor}33` // ბრენდის ფერის ჩრდილი
+                                                boxShadow: `0 4px 12px ${store.brandColor}33`
                                             }}
                                         >
                                             Go to Shop ↗
@@ -230,7 +243,18 @@ const styles = {
     category: { color: '#2563eb', fontWeight: '700', fontSize: '13px', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' },
     title: { margin: '0 0 16px 0', fontSize: '32px', color: '#0f172a', fontWeight: '800', lineHeight: '1.2' },
     description: { color: '#475569', fontSize: '16px', lineHeight: '1.6', marginBottom: '30px' },
-    actionContainer: { display: 'flex', alignItems: 'center', gap: '15px', marginTop: 'auto' },
+
+    actionContainer: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' },
+    watchlistInputGroup: { display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' },
+    priceInput: {
+        padding: '12px 16px',
+        borderRadius: '8px',
+        border: '1px solid #cbd5e1',
+        fontSize: '15px',
+        outline: 'none',
+        width: '150px',
+        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)'
+    },
     watchlistBtn: {
         backgroundColor: '#f59e0b',
         color: '#ffffff',
@@ -238,15 +262,15 @@ const styles = {
         padding: '12px 24px',
         borderRadius: '8px',
         fontWeight: '600',
-        fontSize: '14px',
+        fontSize: '15px',
         cursor: 'pointer',
-        transition: 'background-color 0.2s'
+        transition: 'background-color 0.2s',
+        boxShadow: '0 4px 6px rgba(245, 158, 11, 0.2)'
     },
-    watchlistMsg: { fontSize: '14px', fontWeight: '500', color: '#10b981' },
+    watchlistMsg: { fontSize: '14px', fontWeight: '600', color: '#10b981', marginTop: '5px' },
+
     chartSection: { backgroundColor: '#ffffff', padding: '30px', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '40px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' },
     sectionTitle: { fontSize: '20px', fontWeight: '700', color: '#0f172a', margin: '0 0 20px 0' },
-
-    // 🏪 მაღაზიების ახალი სტილები
     offersSection: { backgroundColor: '#ffffff', padding: '30px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' },
     offersList: { display: 'flex', flexDirection: 'column', gap: '16px' },
     offerRow: {
