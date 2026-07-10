@@ -21,7 +21,7 @@ function LoginPage({ setUser }) {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data || 'Invalid credentials');
+                throw new Error(data.message || 'Invalid credentials');
             }
 
             const loggedInUser = {

@@ -101,4 +101,20 @@ public class WatchlistService {
             );
         }).toList();
     }
+
+    public void removeFromWatchlist(String email, Long alertId) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if(userOptional.isEmpty()) throw new RuntimeException("User not found.");
+
+        User user = userOptional.get();
+
+        PriceAlert alert = priceAlertRepository.findById(alertId)
+                .orElseThrow(() -> new RuntimeException("Alert not found."));
+
+        if(alert.getUser().getId() != user.getId()) {
+            throw new RuntimeException("You are not authorized to delete this alert.");
+        }
+
+        priceAlertRepository.delete(alert);
+    }
 }

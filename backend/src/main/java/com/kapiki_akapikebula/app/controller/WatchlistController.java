@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/watchlist")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class WatchlistController {
     @Autowired
     private WatchlistService watchlistService;
@@ -51,4 +51,19 @@ public class WatchlistController {
         }
     }
 
+    @DeleteMapping("/{alertId}")
+    public ResponseEntity<?> removeFromWatchlist(@RequestHeader("Authorization") String token,
+                                                 @PathVariable Long alertId) {
+        try {
+            String jwt = token.substring(7);
+            String email = jwtUtil.getEmailFromToken(jwt);
+
+            watchlistService.removeFromWatchlist(email, alertId);
+            return ResponseEntity.ok("Product removed from watchlist successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("An unexpected error occurred.");
+        }
+    }
 }

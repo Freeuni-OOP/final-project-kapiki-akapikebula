@@ -6,9 +6,7 @@ function Footer() {
             <div style={styles.container}>
                 <p style={styles.text}>&copy; 2026 Kapiki Akapikebula. All rights reserved.</p>
                 <div style={styles.links}>
-                    <Link to="/" style={styles.link}>Privacy Policy</Link>
-                    <Link to="/" style={styles.link}>Terms of Service</Link>
-                    <Link to="/" style={styles.link}>Contact</Link>
+                    <span style={styles.link}>Contact us : akapikebulakapiki@gmail.com</span>
                 </div>
             </div>
         </footer>
