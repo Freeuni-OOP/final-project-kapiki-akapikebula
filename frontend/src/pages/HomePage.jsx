@@ -14,20 +14,20 @@ function HomePage() {
             try {
                 setLoading(true);
 
-                // 1. წამოვიღოთ პროდუქტები
+
                 const productsData = await getProducts();
 
-                // 🟢 დაზღვევა: თუ Spring-მა დააბრუნა Page ობიექტი ({ content: [...] }), ამოვიღოთ content.
+
                 const productList = Array.isArray(productsData)
                     ? productsData
                     : (productsData?.content || []);
 
                 setProducts(productList);
 
-                // 2. თუ პროდუქტები არსებობს, წამოვიღოთ პირველივე პროდუქტის ისტორია დინამიურად (და არა ხისტად 1)
+
                 if (productList.length > 0) {
                     try {
-                        const firstProductId = productList[0].id;
+                        const firstProductId = productList[0].productId;
                         const historyData = await getProductPriceHistory(firstProductId);
                         setPriceHistory(historyData || []);
                     } catch (historyErr) {

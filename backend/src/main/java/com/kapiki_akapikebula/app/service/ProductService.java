@@ -1,19 +1,66 @@
 package com.kapiki_akapikebula.app.service;
 
+import com.kapiki_akapikebula.app.dto.PriceHistoryResponse;
 import com.kapiki_akapikebula.app.dto.ProductListingResponse;
+import com.kapiki_akapikebula.app.model.PriceHistory;
+import com.kapiki_akapikebula.app.model.Product;
 import com.kapiki_akapikebula.app.model.ShopProducts;
+import com.kapiki_akapikebula.app.repository.PriceHistoryRepository;
+import com.kapiki_akapikebula.app.repository.ProductRepository;
 import com.kapiki_akapikebula.app.repository.ShopProductsRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
 
     private final ShopProductsRepository shopProductsRep;
+    private final ProductRepository productRepository;
+    private final PriceHistoryRepository priceHistoryRepository;
 
-    public ProductService(ShopProductsRepository shopProductsRepository) {
-        this.shopProductsRep = shopProductsRepository;
+    public ProductService(ShopProductsRepository shopProductsRep,
+                          ProductRepository productRepository,
+                          PriceHistoryRepository priceHistoryRepository) {
+        this.shopProductsRep = shopProductsRep;
+        this.productRepository = productRepository;
+        this.priceHistoryRepository = priceHistoryRepository;
+    }
+
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getProductById(long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + id));
+
+
+        Map<String, Object> productMap = new HashMap<>();
+        productMap.put("id", product.getId());
+        productMap.put("name", product.getName());
+        productMap.put("description", product.getDescription());
+        productMap.put("imageUrl", product.getImageUrl());
+
+        Map<String, Object> categoryMap = new HashMap<>();
+        if (product.getCategory() != null) {
+            categoryMap.put("id", product.getCategory().getId());
+            categoryMap.put("name", product.getCategory().getName());
+        }
+        productMap.put("category", categoryMap);
+
+        return productMap;
+    }
+
+    public List<PriceHistoryResponse> getProductHistory(long productId) {
+
+        List<PriceHistory> history = priceHistoryRepository.findByProductIdOrderByRecordedAtAsc(productId);
+
+        return history.stream()
+                .map(h -> new PriceHistoryResponse(h.getPrice(), h.getRecordedAt()))
+                .collect(Collectors.toList());
     }
 
 
@@ -21,9 +68,9 @@ public class ProductService {
         List<ShopProducts> listings = shopProductsRep.findByProductIdOrderByPriceAsc(productId);
 
         if (listings.isEmpty()) {
-            throw new RuntimeException("Product listings not found for ID: " + productId);
+            return List.of();
         }
-        
+
         return listings.stream()
                 .map(listing -> new ProductListingResponse(
                         listing.getShop() != null ? listing.getShop().getName() : "Unknown Shop",

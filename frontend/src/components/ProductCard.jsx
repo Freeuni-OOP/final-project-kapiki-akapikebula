@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 
 function ProductCard({ product }) {
+    const storesCount = product.listings ? product.listings.length : 0;
+
     return (
         <div style={styles.card}>
             <div style={styles.imageContainer}>
@@ -9,19 +11,20 @@ function ProductCard({ product }) {
 
             <div style={styles.info}>
                 <h3 style={styles.title}>{product.name}</h3>
-                <p style={styles.category}>{product.category}</p>
+                <p style={styles.category}>{product.brand || 'Gadget'}</p>
 
                 <div style={styles.priceSection}>
                     <div>
-                        <p style={styles.priceLabel}>Price:</p>
+                        <p style={styles.priceLabel}>Starting from:</p>
                         <p style={styles.price}>
-                            {product.minPrice} ₾ - {product.maxPrice} ₾
+                            {product.lowestPrice} ₾
                         </p>
                     </div>
-                    <p style={styles.storeCount}>{product.storesCount} Stores</p>
+                    <p style={styles.storeCount}>{storesCount} Stores</p>
                 </div>
 
-                <Link to={`/product/${product.id}`} style={styles.button}>
+
+                <Link to={`/product/${product.productId}`} style={styles.button}>
                     Compare Prices
                 </Link>
             </div>
@@ -38,17 +41,16 @@ const styles = {
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
         display: 'flex',
         flexDirection: 'column',
-        cursor: 'pointer',
-        border: '1px solid #e2e8f0',
+        height: '100%',
+        boxSizing: 'border-box',
     },
     imageContainer: {
-        width: '100%',
         height: '200px',
+        padding: '20px',
         backgroundColor: '#f8fafc',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '20px',
         boxSizing: 'border-box',
     },
     image: {
@@ -94,23 +96,23 @@ const styles = {
     },
     storeCount: {
         margin: 0,
-        fontSize: '12px',
-        color: '#10b981',
-        fontWeight: '600',
-        backgroundColor: '#d1fae5',
-        padding: '4px 8px',
-        borderRadius: '12px',
+        fontSize: '13px',
+        color: '#64748b',
+        fontWeight: '500',
     },
     button: {
         display: 'block',
-        textAlign: 'center',
-        backgroundColor: '#2563eb',
-        color: '#ffffff',
-        textDecoration: 'none',
+        width: '100%',
         padding: '10px 0',
+        backgroundColor: '#f1f5f9',
+        color: '#0f172a',
+        textAlign: 'center',
+        textDecoration: 'none',
         borderRadius: '8px',
         fontWeight: '600',
         fontSize: '14px',
+        transition: 'background-color 0.2s ease, color 0.2s ease',
+        boxSizing: 'border-box',
     },
 };
 
