@@ -7,7 +7,7 @@ const DEBOUNCE_MS = 350;
 function SearchBar() {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
-    const [fallback, setFallback] = useState([]); 
+    const [fallback, setFallback] = useState([]);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [error, setError] = useState(null);
@@ -15,6 +15,15 @@ function SearchBar() {
     const wrapperRef = useRef(null);
     const debounceTimer = useRef(null);
     const navigate = useNavigate();
+
+
+    const saveSearchHistory = (term) => {
+        if (!term.trim()) return;
+        const currentHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+
+        const updatedHistory = [term.trim(), ...currentHistory.filter(t => t !== term.trim())].slice(0, 3);
+        localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+    };
 
     useEffect(() => {
         function handleClickOutside(e) {
@@ -31,6 +40,7 @@ function SearchBar() {
 
         const trimmed = query.trim();
         if (!trimmed) {
+            setResults([]);
             return;
         }
 
@@ -38,119 +48,143 @@ function SearchBar() {
             setLoading(true);
             setError(null);
             try {
-                const data = await searchProducts(trimmed, undefined, undefined, 'name', 'asc', 0, 6);
-                const items = data?.content ?? [];
-                setResults(items);
-                setOpen(true);
+                const data = await searchProducts(trimmed, undefined, undefined, 'name', 'asc', 0, 5);
+                setResults(data.content || []);
 
-                if (items.length === 0) {
-                    try {
-                        const home = await getHomeProducts();
-                        setFallback((home?.content ?? home ?? []).slice(0, 4));
-                    } catch {
-                        setFallback([]);
-                    }
-                } else {
-                    setFallback([]);
-                }
+                // 🔥 ავტომატურად ვინახავთ ისტორიას როგორც კი რექვესთი გაიგზავნება
+                saveSearchHistory(trimmed);
+
             } catch (err) {
-                console.error('Search error:', err);
-                setResults([]);
-                setFallback([]);
-                setOpen(true);
-                setError('ძებნა ვერ შესრულდა — შეამოწმეთ სერვერთან კავშირი');
+                console.error("Search error:", err);
+                setError("Failed to fetch results");
             } finally {
                 setLoading(false);
             }
         }, DEBOUNCE_MS);
 
-        return () => clearTimeout(debounceTimer.current);
     }, [query]);
 
-    const handleQueryChange = (e) => {
-        const value = e.target.value;
-        setQuery(value);
-
-        if (!value.trim()) {
-            setResults([]);
-            setFallback([]);
-            setOpen(false);
-            setError(null);
+    const handleFocus = async () => {
+        setOpen(true);
+        if (!query.trim() && fallback.length === 0) {
+            setLoading(true);
+            try {
+                const homeData = await getHomeProducts();
+                setFallback((homeData?.content || homeData || []).slice(0, 5));
+            } catch (err) {
+                console.error("Fallback error:", err);
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
-    const goToProduct = (id) => {
+    const handleProductClick = (productId) => {
         setOpen(false);
         setQuery('');
-        navigate(`/product/${id}`);
+        navigate(`/product/${productId}`);
     };
 
-    const goToSearchPage = () => {
-        const trimmed = query.trim();
-        if (!trimmed) return;
-        setOpen(false);
-        navigate(`/search?query=${encodeURIComponent(trimmed)}`);
+    const handleSubmit = () => {
+        if (query.trim()) {
+            saveSearchHistory(query);
+            setOpen(false);
+            navigate(`/search?query=${encodeURIComponent(query.trim())}`);
+        }
     };
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            goToSearchPage();
+            handleSubmit();
         }
     };
 
-    const showNoResults = open && !loading && !error && query.trim() && results.length === 0;
+    const displayItems = query.trim() ? results : fallback;
 
     return (
-        <div style={styles.wrapper} ref={wrapperRef}>
-            <input
-                type="text"
-                value={query}
-                onChange={handleQueryChange}
-                onKeyDown={handleKeyDown}
-                onFocus={() => query.trim() && setOpen(true)}
-                placeholder="მოძებნე პროდუქტი..."
-                style={styles.input}
-            />
+        <div style={styles.container} ref={wrapperRef}>
+            <div style={styles.inputWrapper}>
+                <input
+                    type="text"
+                    placeholder="Search for electronics..."
+                    value={query}
+                    onChange={(e) => {
+                        setQuery(e.target.value);
+                        setOpen(true);
+                    }}
+                    onFocus={handleFocus}
+                    onKeyDown={handleKeyDown}
+                    style={styles.input}
+                />
+                <button style={styles.button} onClick={(e) => {
+                    e.preventDefault();
+                    handleSubmit(); // ვიძახებთ საბმითს ღილაკზე
+                }}>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+            </div>
 
             {open && (
                 <div style={styles.dropdown}>
-                    {loading && <div style={styles.info}>იძებნება...</div>}
-
-                    {!loading && error && <div style={styles.errorInfo}>{error}</div>}
-
-                    {!loading && !error && results.map((p) => (
-                        <div key={p.productId} style={styles.item} onClick={() => goToProduct(p.productId)}>
-                            <img src={p.imageUrl} alt={p.name} style={styles.itemImg} />
-                            <div style={styles.itemText}>
-                                <div style={styles.itemName}>{p.name}</div>
-                                <div style={styles.itemBrand}>{p.brand}</div>
-                            </div>
-                            {p.lowestPrice != null && (
-                                <div style={styles.itemPrice}>{p.lowestPrice} ₾</div>
-                            )}
-                        </div>
-                    ))}
-
-                    {showNoResults && (
-                        <>
-                            <div style={styles.info}>ვერაფერი მოიძებნა „{query}“-სთვის</div>
-                            {fallback.length > 0 && (
-                                <>
-                                    <div style={styles.fallbackLabel}>იქნებ დაგაინტერესოთ:</div>
-                                    {fallback.map((p) => (
-                                        <div key={p.productId ?? p.id} style={styles.item} onClick={() => goToProduct(p.productId ?? p.id)}>
-                                            <img src={p.imageUrl} alt={p.name} style={styles.itemImg} />
-                                            <div style={styles.itemText}>
-                                                <div style={styles.itemName}>{p.name}</div>
-                                                <div style={styles.itemBrand}>{p.brand}</div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </>
-                            )}
-                        </>
+                    {!query.trim() && (
+                        <div style={styles.sectionTitle}>Suggested Products</div>
                     )}
+
+                    {loading ? (
+                        <div style={styles.message}>Searching...</div>
+                    ) : error ? (
+                        <div style={styles.message}>{error}</div>
+                    ) : displayItems.length > 0 ? (
+                        displayItems.map((item) => {
+                            const pId = item.productId || item.id;
+                            const priceToDisplay = item.lowestPrice || item.price;
+
+                            return (
+                                <div
+                                    key={pId}
+                                    style={styles.item}
+                                    onClick={() => handleProductClick(pId)}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                    <img
+                                        src={item.imageUrl}
+                                        alt={item.name}
+                                        style={styles.itemImg}
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = 'https://via.placeholder.com/32?text=No+Img';
+                                        }}
+                                    />
+                                    <div style={styles.itemText}>
+                                        <div style={styles.itemName} title={item.name}>
+                                            {item.name}
+                                        </div>
+                                        <div style={styles.itemBrand}>{item.brand || 'Electronics'}</div>
+                                    </div>
+                                    <div style={styles.itemPrice}>
+                                        {priceToDisplay ? `${priceToDisplay} ₾` : ''}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : query.trim() ? (
+                        <div style={styles.message}>No products found.</div>
+                    ) : null}
                 </div>
             )}
         </div>
@@ -158,91 +192,19 @@ function SearchBar() {
 }
 
 const styles = {
-    wrapper: {
-        position: 'relative',
-        flex: 1,
-        maxWidth: '420px',
-        margin: '0 20px',
-    },
-    input: {
-        width: '100%',
-        boxSizing: 'border-box',
-        padding: '9px 14px',
-        borderRadius: '8px',
-        border: '1px solid #e2e8f0',
-        backgroundColor: '#f1f5f9',
-        color: '#1e293b',
-        colorScheme: 'light',
-        fontSize: '14px',
-        outline: 'none',
-    },
-    dropdown: {
-        position: 'absolute',
-        top: '46px',
-        left: 0,
-        right: 0,
-        backgroundColor: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '10px',
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-        maxHeight: '360px',
-        overflowY: 'auto',
-        zIndex: 200,
-        padding: '6px 0',
-    },
-    item: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        padding: '8px 14px',
-        cursor: 'pointer',
-    },
-    itemImg: {
-        width: '32px',
-        height: '32px',
-        objectFit: 'contain',
-        borderRadius: '4px',
-        flexShrink: 0,
-    },
-    itemText: {
-        flex: 1,
-        minWidth: 0,
-    },
-    itemName: {
-        fontSize: '13px',
-        fontWeight: '600',
-        color: '#1e293b',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-    },
-    itemBrand: {
-        fontSize: '12px',
-        color: '#64748b',
-    },
-    itemPrice: {
-        fontSize: '13px',
-        fontWeight: '700',
-        color: '#2563eb',
-        flexShrink: 0,
-    },
-    info: {
-        padding: '10px 14px',
-        fontSize: '13px',
-        color: '#64748b',
-    },
-    errorInfo: {
-        padding: '10px 14px',
-        fontSize: '13px',
-        color: '#dc2626',
-    },
-    fallbackLabel: {
-        padding: '4px 14px',
-        fontSize: '11px',
-        fontWeight: '600',
-        color: '#94a3b8',
-        textTransform: 'uppercase',
-    },
+    container: { position: 'relative', width: '400px', maxWidth: '100%' },
+    inputWrapper: { display: 'flex', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '4px 12px', transition: 'all 0.2s ease' },
+    input: { flex: 1, border: 'none', backgroundColor: 'transparent', padding: '8px 4px', fontSize: '14px', color: '#0f172a', outline: 'none' },
+    button: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    dropdown: { position: 'absolute', top: '48px', left: 0, right: 0, backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', maxHeight: '360px', overflowY: 'auto', zIndex: 200, padding: '6px 0' },
+    item: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', cursor: 'pointer' },
+    itemImg: { width: '32px', height: '32px', objectFit: 'contain', borderRadius: '4px', flexShrink: 0 },
+    itemText: { flex: 1, minWidth: 0 },
+    itemName: { fontSize: '13px', fontWeight: '600', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+    itemBrand: { fontSize: '12px', color: '#64748b' },
+    itemPrice: { fontSize: '13px', fontWeight: 'bold', color: '#2563eb', whiteSpace: 'nowrap' },
+    sectionTitle: { padding: '8px 14px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.5px' },
+    message: { padding: '16px 14px', fontSize: '13px', color: '#64748b', textAlign: 'center' },
 };
 
 export default SearchBar;
