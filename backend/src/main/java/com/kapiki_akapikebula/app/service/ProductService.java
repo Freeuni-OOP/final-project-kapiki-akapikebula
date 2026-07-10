@@ -1,12 +1,9 @@
 package com.kapiki_akapikebula.app.service;
 
-import com.kapiki_akapikebula.app.dto.PriceHistoryResponse;
 import com.kapiki_akapikebula.app.dto.ProductListingResponse;
 import com.kapiki_akapikebula.app.dto.MatchedProductDTO; // 👈 შემოვიტანოთ DTO
-import com.kapiki_akapikebula.app.model.PriceHistory;
 import com.kapiki_akapikebula.app.model.Product;
 import com.kapiki_akapikebula.app.model.ShopProducts;
-import com.kapiki_akapikebula.app.repository.PriceHistoryRepository;
 import com.kapiki_akapikebula.app.repository.ProductRepository;
 import com.kapiki_akapikebula.app.repository.ShopProductsRepository;
 import org.springframework.stereotype.Service;
@@ -22,14 +19,11 @@ public class ProductService {
 
     private final ShopProductsRepository shopProductsRep;
     private final ProductRepository productRepository;
-    private final PriceHistoryRepository priceHistoryRepository;
 
     public ProductService(ShopProductsRepository shopProductsRep,
-                          ProductRepository productRepository,
-                          PriceHistoryRepository priceHistoryRepository) {
+                          ProductRepository productRepository) {
         this.shopProductsRep = shopProductsRep;
         this.productRepository = productRepository;
-        this.priceHistoryRepository = priceHistoryRepository;
     }
 
     // 🟢 ახალი სერვის მეთოდი
@@ -58,14 +52,6 @@ public class ProductService {
         productMap.put("category", categoryMap);
 
         return productMap;
-    }
-
-    public List<PriceHistoryResponse> getProductHistory(long productId) {
-        List<PriceHistory> history = priceHistoryRepository.findByProductIdOrderByRecordedAtAsc(productId);
-
-        return history.stream()
-                .map(h -> new PriceHistoryResponse(h.getPrice(), h.getRecordedAt()))
-                .collect(Collectors.toList());
     }
 
     public List<ProductListingResponse> getProductListings(long productId) {
