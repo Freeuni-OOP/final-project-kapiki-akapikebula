@@ -32,6 +32,42 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             Pageable pageable
     );
 
+    // When sorting by price, we need the DB to compute lowestPrice per product
+// and sort by it — otherwise we can only sort within the current page in Java
+    @Query("""
+    SELECT p.id FROM Product p
+    JOIN p.shopProducts sp
+    WHERE (:query IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                           OR LOWER(p.brand) LIKE LOWER(CONCAT('%', :query, '%')))
+      AND (:minPrice IS NULL OR sp.price >= :minPrice)
+      AND (:maxPrice IS NULL OR sp.price <= :maxPrice)
+    GROUP BY p.id
+    ORDER BY MIN(sp.price) ASC
+""")
+    Page<Long> searchIdsSortByPriceAsc(
+            @Param("query") String query,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT p.id FROM Product p
+    JOIN p.shopProducts sp
+    WHERE (:query IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
+                           OR LOWER(p.brand) LIKE LOWER(CONCAT('%', :query, '%')))
+      AND (:minPrice IS NULL OR sp.price >= :minPrice)
+      AND (:maxPrice IS NULL OR sp.price <= :maxPrice)
+    GROUP BY p.id
+    ORDER BY MIN(sp.price) DESC
+""")
+    Page<Long> searchIdsSortByPriceDesc(
+            @Param("query") String query,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            Pageable pageable
+    );
+
     // Step 2: fetch full product data (with shop listings) for a specific list of IDs
     // IN clause means one query total, not N queries
     @Query("""

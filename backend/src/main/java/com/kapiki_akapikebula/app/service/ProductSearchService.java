@@ -53,7 +53,22 @@ public class ProductSearchService {
         // --- Step 1: get a page of matching IDs from the DB ---
         // This is a simple query with no collection join, so SQL-level
         // pagination works correctly here
-        Page<Long> idPage = productRepository.searchIds(keyword, minPrice, maxPrice, pageable);
+        Page<Long> idPage;
+
+        if (sortByPrice) {
+            // Use unsorted pageable — ORDER BY is already hardcoded in the query itself
+            Pageable unsortedPageable = PageRequest.of(
+                    Math.max(page, 0),
+                    Math.min(size, 100)
+            );
+            if (direction == Sort.Direction.DESC) {
+                idPage = productRepository.searchIdsSortByPriceDesc(keyword, minPrice, maxPrice, unsortedPageable);
+            } else {
+                idPage = productRepository.searchIdsSortByPriceAsc(keyword, minPrice, maxPrice, unsortedPageable);
+            }
+        } else {
+            idPage = productRepository.searchIds(keyword, minPrice, maxPrice, pageable);
+        }
 
         if (idPage.isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);
@@ -104,20 +119,6 @@ public class ProductSearchService {
                     );
                 })
                 .toList();
-
-        // --- Step 4: if sorting by price, re-sort the page results ---
-        // We can't do this at SQL level (lowestPrice is computed here in Java),
-        // so we sort the current page's results after building them.
-        // Note: this sorts within the page, not globally — global price sorting
-        // across all pages would require a DB-level subquery, which is a future optimization.
-        if (sortByPrice) {
-            Comparator<ProductSearchResponse> byPrice = Comparator.comparing(
-                    r -> r.getLowestPrice() != null ? r.getLowestPrice() : BigDecimal.ZERO
-            );
-            results = results.stream()
-                    .sorted(direction == Sort.Direction.DESC ? byPrice.reversed() : byPrice)
-                    .toList();
-        }
 
         // Wrap in a Page so the controller response includes totalPages, totalElements etc.
         return new PageImpl<>(results, pageable, idPage.getTotalElements());
