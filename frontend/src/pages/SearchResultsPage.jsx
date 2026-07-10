@@ -120,7 +120,7 @@ function SearchResultsPage() {
                         <div style={styles.filterGroup}>
                             <label style={styles.filterLabel}>Sort</label>
                             <select value={sortOption} onChange={handleSortChange} style={styles.select}>
-                                <option value="name_asc">By Name(A-Z)</option>
+                                <option value="name_asc">By Price</option>
                                 <option value="price_asc">Price: Ascending ⬆</option>
                                 <option value="price_desc">Price: Descending ⬇</option>
                             </select>
