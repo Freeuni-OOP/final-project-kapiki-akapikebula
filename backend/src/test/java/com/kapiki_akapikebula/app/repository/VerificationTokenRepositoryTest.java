@@ -31,19 +31,16 @@ class VerificationTokenRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // 1. ვქმნით იუზერს ყველა სავალდებულო ველით
         testUser = new User();
         testUser.setUsername("token_user");
         testUser.setEmail("tokenuser@example.com");
         testUser.setPasswordHash("hash_123");
         entityManager.persist(testUser);
 
-        // 2. ვქმნით ტოკენს და ვუმატებთ სავალდებულო expiryDate-ს
         testToken = new VerificationToken();
         testToken.setToken("random-uuid-token-12345");
         testToken.setUser(testUser);
 
-        // ვუთითებთ ვადის გასვლის დროს (მაგალითად: ხვალინდელი დრო)
         testToken.setExpiryDate(LocalDateTime.now().plusHours(24));
 
         entityManager.persist(testToken);

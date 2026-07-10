@@ -30,7 +30,6 @@ public class EEApiScraper extends ApiScraper {
         driver.manage().timeouts().scriptTimeout(java.time.Duration.ofSeconds(60));
 
         try {
-            // Load the site once to establish session
             driver.get(BASE_URL);
             new WebDriverWait(driver, Duration.ofSeconds(10))
                     .until(d -> d.manage().getCookieNamed(COOKIE_NAME) != null);
@@ -72,8 +71,6 @@ public class EEApiScraper extends ApiScraper {
             driver.quit();
         }
     }
-
-    // ── Fetch URL via fetch() inside the browser's JS context ────────────────
 
     private String fetchViaJs(WebDriver driver, String url, String token) {
         String script = """

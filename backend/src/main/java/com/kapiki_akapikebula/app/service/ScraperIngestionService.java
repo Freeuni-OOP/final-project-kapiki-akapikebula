@@ -52,19 +52,16 @@ public class ScraperIngestionService {
 
         String rawName = listing.getProductName();
 
-        // --- Step 1: narrow candidates using one distinctive word from the name ---
         String searchToken = MatchKeyBuilder.pickSearchToken(rawName);
         List<Product> candidates = searchToken.isBlank()
                 ? List.of()
                 : productRepository.findByNameContainingIgnoreCase(searchToken);
 
-        // --- Step 2: score each candidate, keep the best one above threshold ---
         Product product = candidates.stream()
                 .filter(p -> MatchKeyBuilder.isMatch(rawName, p.getName()))
                 .max(Comparator.comparingDouble(p -> MatchKeyBuilder.similarityScore(rawName, p.getName())))
                 .orElseGet(() -> createProduct(listing, defaultCategory));
 
-        // --- Step 3: upsert the shop listing ---
         ShopProducts shopProduct = shopProductsRepository
                 .findByProductIdAndShopId(product.getId(), shop.getId())
                 .orElseGet(() -> {

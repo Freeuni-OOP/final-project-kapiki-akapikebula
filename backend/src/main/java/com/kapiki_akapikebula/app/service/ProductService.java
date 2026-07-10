@@ -26,10 +26,8 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    // 🟢 ახალი სერვის მეთოდი
     @Transactional(readOnly = true)
     public List<MatchedProductDTO> getMatchedProductsForHomePage() {
-        // თუ შენს ProductRepository-ში ამ მეთოდს სხვა სახელი ქვია, ჩაწერე ის სახელი
         return productRepository.findMatchedProductsForHomePage();
     }
 

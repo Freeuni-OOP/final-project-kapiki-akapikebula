@@ -18,12 +18,7 @@ public class PriceAlertNotificationService {
     private final ShopProductsRepository shopProductsRepository;
     private final EmailService emailService;
 
-    /**
-     * უნდა გაეშვას scraper-ის მუშაობის დასრულების შემდეგ (ScheduledScraperRunner-იდან).
-     * გადის ყველა PriceAlert-ს, ადარებს მიმდინარე ყველაზე დაბალ ფასს target ფასს,
-     * და აგზავნის შეტყობინებას მხოლოდ მაშინ თუ:
-     * ეს არის პირველი შეტყობინება ამ alert-ისთვის, ან ფასი კიდევ უფრო ჩამოვიდა წინა შეტყობინების დროინდელ ფასზე
-     */
+
     public void checkAndNotify() {
         List<PriceAlert> alerts = priceAlertRepository.findAll();
 
@@ -46,10 +41,6 @@ public class PriceAlertNotificationService {
         log.info("Price alert check complete — notified: {}, skipped: {}", notified, skipped);
     }
 
-    /**
-     * @return true თუ შეტყობინება გაიგზავნა, false თუ არა (target არ მიღწეულა
-     * ან უკვე შეტყობინებულია ამ ან უფრო დაბალ ფასზე)
-     */
     private boolean processAlert(PriceAlert alert) {
         BigDecimal currentPrice = getCurrentLowestPrice(alert.getProduct().getId());
 
