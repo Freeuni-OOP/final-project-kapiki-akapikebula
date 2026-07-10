@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import PriceChart from '../components/PriceChart';
 
 const getStoreMeta = (shopName) => {
     const name = shopName?.toLowerCase() || '';
@@ -29,11 +28,9 @@ function ProductDetailsPage() {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [offers, setOffers] = useState([]);
-    const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [watchlistMsg, setWatchlistMsg] = useState('');
-
 
     const [targetPrice, setTargetPrice] = useState('');
 
@@ -53,19 +50,6 @@ function ProductDetailsPage() {
                     setOffers(offersData);
                 }
 
-                const historyRes = await fetch(`http://localhost:8080/api/products/${id}/history`);
-                if (historyRes.ok) {
-                    const historyData = await historyRes.json();
-                    const formattedHistory = historyData.map(item => {
-                        const date = new Date(item.recordedAt);
-                        return {
-                            month: date.toLocaleString('en-US', { month: 'short' }),
-                            price: item.price
-                        };
-                    });
-                    setHistory(formattedHistory);
-                }
-
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -82,7 +66,6 @@ function ProductDetailsPage() {
             alert('Please login first to add to your watchlist!');
             return;
         }
-
 
         if (!targetPrice || isNaN(targetPrice) || Number(targetPrice) <= 0) {
             setWatchlistMsg('⚠️ Please enter a valid target price.');
@@ -135,7 +118,6 @@ function ProductDetailsPage() {
                     <h1 style={styles.title}>{product.name}</h1>
                     <p style={styles.description}>{product.description}</p>
 
-
                     <div style={styles.actionContainer}>
                         <div style={styles.watchlistInputGroup}>
                             <input
@@ -152,15 +134,6 @@ function ProductDetailsPage() {
                         {watchlistMsg && <span style={styles.watchlistMsg}>{watchlistMsg}</span>}
                     </div>
                 </div>
-            </div>
-
-            <div style={styles.chartSection}>
-                <h2 style={styles.sectionTitle}>Price History</h2>
-                {history.length > 0 ? (
-                    <PriceChart data={history} />
-                ) : (
-                    <p style={{ color: '#64748b' }}>No price history available yet.</p>
-                )}
             </div>
 
             <div style={styles.offersSection}>
@@ -269,7 +242,6 @@ const styles = {
     },
     watchlistMsg: { fontSize: '14px', fontWeight: '600', color: '#10b981', marginTop: '5px' },
 
-    chartSection: { backgroundColor: '#ffffff', padding: '30px', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '40px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' },
     sectionTitle: { fontSize: '20px', fontWeight: '700', color: '#0f172a', margin: '0 0 20px 0' },
     offersSection: { backgroundColor: '#ffffff', padding: '30px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' },
     offersList: { display: 'flex', flexDirection: 'column', gap: '16px' },

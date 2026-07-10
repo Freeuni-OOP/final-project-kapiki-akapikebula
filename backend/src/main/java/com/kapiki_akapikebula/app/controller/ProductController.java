@@ -55,16 +55,6 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/{id}/history")
-    public ResponseEntity<?> getProductHistory(@PathVariable long id) {
-        try {
-            return ResponseEntity.ok(productService.getProductHistory(id));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
 
     @GetMapping("/search")
     public ResponseEntity<Page<ProductSearchResponse>> search(
