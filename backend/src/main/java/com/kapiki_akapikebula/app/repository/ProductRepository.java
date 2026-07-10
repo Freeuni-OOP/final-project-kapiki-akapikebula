@@ -1,5 +1,6 @@
 package com.kapiki_akapikebula.app.repository;
 
+import com.kapiki_akapikebula.app.dto.MatchedProductDTO;
 import com.kapiki_akapikebula.app.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,4 +45,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByMatchKey(String matchKey);
     // Used to narrow down candidates before running the fuzzy comparison
     List<Product> findByNameContainingIgnoreCase(String token);
+
+    @Query("SELECT p.id AS id, p.name AS name, p.imageUrl AS imageUrl, " +
+        "MIN(sp.price) AS minPrice, MAX(sp.price) AS maxPrice, " +
+        "COUNT(sp.id) AS storesCount " +
+        "FROM Product p " +
+        "JOIN p.shopProducts sp " +
+        "GROUP BY p.id, p.name, p.imageUrl " +
+        "HAVING COUNT(sp.id) > 1")
+List<MatchedProductDTO> findMatchedProductsForHomePage();
+
 }

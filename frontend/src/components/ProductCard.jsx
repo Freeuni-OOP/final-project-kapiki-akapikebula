@@ -1,32 +1,38 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function ProductCard({ product }) {
-    const storesCount = product.listings ? product.listings.length : 0;
+    const navigate = useNavigate();
+
+    // ფუნქცია, რომელიც ნებისმიერ კლიკზე გადაგვიყვანს პროდუქტის გვერდზე
+    const handleCardClick = () => {
+        navigate(`/product/${product.id}`);
+    };
 
     return (
-        <div style={styles.card}>
+        // 🟢 onClick-ის დახმარებით მთლიანი div გახდა აქტიური ლინკი
+        <div onClick={handleCardClick} style={styles.card}>
             <div style={styles.imageContainer}>
                 <img src={product.imageUrl} alt={product.name} style={styles.image} />
             </div>
 
             <div style={styles.info}>
                 <h3 style={styles.title}>{product.name}</h3>
-                <p style={styles.category}>{product.brand || 'Gadget'}</p>
+                <p style={styles.category}>{product.category || 'Gadget'}</p>
 
                 <div style={styles.priceSection}>
                     <div>
-                        <p style={styles.priceLabel}>Starting from:</p>
+                        <p style={styles.priceLabel}>Price:</p>
                         <p style={styles.price}>
-                            {product.lowestPrice} ₾
+                            {product.minPrice} ₾ - {product.maxPrice} ₾
                         </p>
                     </div>
-                    <p style={styles.storeCount}>{storesCount} Stores</p>
+                    <p style={styles.storeCount}>{product.storesCount} Stores</p>
                 </div>
 
-
-                <Link to={`/product/${product.productId}`} style={styles.button}>
+                {/* 🟢 ეს არის ჩვეულებრივი ლამაზი დივ-ღილაკი */}
+                <div style={styles.button}>
                     Compare Prices
-                </Link>
+                </div>
             </div>
         </div>
     );
@@ -43,6 +49,7 @@ const styles = {
         flexDirection: 'column',
         height: '100%',
         boxSizing: 'border-box',
+        cursor: 'pointer', // 👈 მაუსის მიტანისას მთლიან ქარდზე გამოჩნდება ხელის სიმბოლო (Pointer)
     },
     imageContainer: {
         height: '200px',
@@ -107,7 +114,6 @@ const styles = {
         backgroundColor: '#f1f5f9',
         color: '#0f172a',
         textAlign: 'center',
-        textDecoration: 'none',
         borderRadius: '8px',
         fontWeight: '600',
         fontSize: '14px',
