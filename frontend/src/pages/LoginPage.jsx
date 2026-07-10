@@ -24,9 +24,13 @@ function LoginPage({ setUser }) {
                 throw new Error(data.message || 'Invalid credentials');
             }
 
+            const payloadBase64 = data.token.split('.')[1];
+            const decodedPayload = JSON.parse(atob(payloadBase64))
+            const usernameFromJwt = decodedPayload.username;
+
             const loggedInUser = {
                 email: email,
-                username: email.split('@')[0],
+                username: usernameFromJwt,
                 token: data.token
             };
 

@@ -91,7 +91,7 @@ public class UserService {
             throw new RuntimeException("incorrect password!");
         }
 
-        return jwtUtil.generateToken(user.getEmail());
+        return jwtUtil.generateToken(user.getEmail(), user.getUsername());
     }
 
     @Transactional

@@ -84,7 +84,7 @@ public class UserServiceTest {
 
         when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(existingUser));
         when(passwordEncoder.matches(request.getPassword(), "encodedPassword")).thenReturn(true);
-        when(jwtUtil.generateToken("test@user.com")).thenReturn("mock-jwt-token");
+        when(jwtUtil.generateToken("test@user.com", "test")).thenReturn("mock-jwt-token");
 
         String token = userService.loginUser(request);
 
