@@ -116,4 +116,23 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
+
+    @Transactional
+    public void updateUsername(String email, String newUsername) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        user.setUsername(newUsername);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteAccount(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        // Marks the user as disabled so they can no longer log in, preserving data integrity.
+        user.setEnabled(false);
+        userRepository.save(user);
+    }
 }
