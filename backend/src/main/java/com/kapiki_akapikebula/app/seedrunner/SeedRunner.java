@@ -30,7 +30,7 @@ public class SeedRunner {
     public void run() {
         log.info("Starting MULTITHREADED product discovery...");
 
-        ExecutorService executor = Executors.newFixedThreadPool(6);
+        ExecutorService executor = Executors.newFixedThreadPool(SEED_QUERIES.size());
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
