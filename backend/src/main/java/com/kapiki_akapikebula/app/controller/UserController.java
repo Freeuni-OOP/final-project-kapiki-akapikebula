@@ -66,4 +66,34 @@ public class UserController {
             return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred."));
         }
     }
+
+    @PutMapping("/update-username")
+    public ResponseEntity<?> updateUsername(@RequestBody UpdateUsernameRequest request, Principal principal) {
+        try {
+            // Extracts email from the authenticated JWT security context
+            String email = principal.getName();
+
+            userService.updateUsername(email, request.getUsername());
+            return ResponseEntity.ok(Map.of("message", "Username updated successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteAccount(Principal principal) {
+        try {
+            // Extracts email from the authenticated JWT security context
+            String email = principal.getName();
+
+            userService.deleteAccount(email);
+            return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
 }
