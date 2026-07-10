@@ -40,6 +40,6 @@ export const searchProducts = async (query, minPrice, maxPrice, sortBy = 'name',
 };
 
 export const getHomeProducts = async () => {
-    const response = await axios.get('http://localhost:8080/api/products/home-products');
+    const response = await axios.get(`${API_BASE_URL}/home-products`);
     return response.data;
 };
