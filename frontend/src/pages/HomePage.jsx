@@ -1,111 +1,61 @@
 import { useEffect, useState } from 'react';
 import ProductCard from '../components/ProductCard';
-import { getHomeProducts } from '../api/productApi';
+// 🟢 ამოღებულია PriceChart-ის იმპორტი
+import { getHomeProducts } from '../api/productApi'; // 🟢 ამოღებულია getProductPriceHistory
 
 function HomePage() {
     const [products, setProducts] = useState([]);
-    const [recommendations, setRecommendations] = useState([]);
+    // 🟢 ამოღებულია priceHistory სახელმწიფო (state)
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const isUserLoggedIn = !!localStorage.getItem('user');
-
     useEffect(() => {
-        const fetchMainProducts = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
-                setError(null);
 
+                // წამოვიღოთ მხოლოდ დამეჩილი პროდუქტები ჰოუმ ფეიჯისთვის
                 const productsData = await getHomeProducts();
-                const productList = Array.isArray(productsData)
-                    ? productsData
-                    : (productsData?.content || []);
 
+                const productList = Array.isArray(productsData) ? productsData : [];
+                setProducts(productList);
 
-                const normalizedList = productList.map(p => ({
-                    ...p,
-                    id: p.id || p.productId,
-                    productId: p.productId || p.id,
-                    lowestPrice: p.lowestPrice || p.minPrice || p.price,
-                    minPrice: p.minPrice || p.lowestPrice || p.price
-                }));
+                // 🟢 ამოღებულია ისტორიის წამოღების ზედმეტი ბლოკი
 
-                setProducts(normalizedList);
             } catch (err) {
-                console.error("Error loading home page main data:", err);
-                setError("Error loading data. Please try again.");
+                console.error("Error loading home page data:", err);
+                setError("Error loading data.");
             } finally {
                 setLoading(false);
             }
         };
 
-        const fetchRecommendations = async () => {
-            if (!isUserLoggedIn) return;
+        fetchData();
+    }, []);
 
-            try {
-                const searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-                if (searchHistory.length > 0) {
-                    const lastSearch = searchHistory[0];
+    if (loading) {
+        return <div style={{ textAlign: 'center', marginTop: '50px', color: '#1e293b' }}>Loading ...</div>;
+    }
 
-                    const recRes = await fetch(`http://localhost:8080/api/products/search?query=${lastSearch}&size=4`);
-                    if (recRes.ok) {
-                        const recData = await recRes.json();
-                        const recList = recData.content || [];
-
-                        // 🔥 აქაც ნორმალიზაცია, რომ რეკომენდაციებზე დაჭერისას ერორი არ ამოაგდოს
-                        const normalizedRecs = recList.map(p => ({
-                            ...p,
-                            id: p.productId || p.id,
-                            productId: p.productId || p.id,
-                            lowestPrice: p.lowestPrice || p.minPrice || p.price,
-                            minPrice: p.minPrice || p.lowestPrice || p.price
-                        }));
-
-                        setRecommendations(normalizedRecs);
-                    }
-                }
-            } catch (err) {
-                console.error("Error loading recommendations:", err);
-            }
-        };
-
-        fetchMainProducts().then(() => {
-            fetchRecommendations();
-        });
-
-    }, [isUserLoggedIn]);
-
-    if (loading) return <div style={{ textAlign: 'center', marginTop: '50px', color: '#1e293b' }}>Loading products...</div>;
-    if (error) return <div style={{ textAlign: 'center', marginTop: '50px', color: '#ef4444' }}>{error}</div>;
+    if (error) {
+        return <div style={{ textAlign: 'center', color: 'red', marginTop: '50px' }}>{error}</div>;
+    }
 
     return (
         <div style={styles.container}>
+            {/* 🟢 ჩარტის სექცია (chartCard) წარმატებით ამოღებულია აქედან! */}
 
-            {/* ✨ AI Recommendations Section */}
-            {isUserLoggedIn && recommendations.length > 0 && (
-                <div style={{ marginBottom: '50px' }}>
-                    <div style={styles.sectionHeader}>
-                        <h2 style={styles.sectionTitle}>✨ Recommended for You</h2>
-                        <p style={styles.sectionSubtitle}>Based on your recent searches</p>
-                    </div>
-                    <div style={styles.grid}>
-                        {recommendations.map((product) => (
-                            <ProductCard key={`rec-${product.id}`} product={product} />
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* 🔥 Popular Electronics Section */}
+            {/* Product List Section */}
             <div style={styles.sectionHeader}>
                 <h2 style={styles.sectionTitle}>Popular Electronics</h2>
                 <p style={styles.sectionSubtitle}>Compare prices across top Georgian retailers</p>
             </div>
 
+            {/* პროდუქტების სექცია */}
             <div style={styles.grid}>
-                {products && products.length > 0 ? (
+                {products.length > 0 ? (
                     products.map((product) => (
-                        <ProductCard key={`main-${product.id}`} product={product} />
+                        <ProductCard key={product.id} product={product} />
                     ))
                 ) : (
                     <p style={{ color: '#64748b' }}>No products found.</p>
@@ -116,11 +66,32 @@ function HomePage() {
 }
 
 const styles = {
-    container: { maxWidth: '1200px', margin: '30px auto', padding: '0 20px', boxSizing: 'border-box' },
-    sectionHeader: { marginBottom: '24px' },
-    sectionTitle: { margin: '0 0 6px 0', fontSize: '22px', color: '#0f172a', fontWeight: '700' },
-    sectionSubtitle: { margin: 0, fontSize: '14px', color: '#64748b' },
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '24px' },
+    container: {
+        maxWidth: '1200px',
+        margin: '30px auto',
+        padding: '0 20px',
+        boxSizing: 'border-box',
+    },
+    // 🟢 ჩარტის სტილები ამოღებულია სისუფთავისთვის
+    sectionHeader: {
+        marginBottom: '24px',
+    },
+    sectionTitle: {
+        margin: '0 0 6px 0',
+        fontSize: '22px',
+        color: '#0f172a',
+        fontWeight: '700',
+    },
+    sectionSubtitle: {
+        margin: 0,
+        fontSize: '14px',
+        color: '#64748b',
+    },
+    grid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        gap: '24px',
+    },
 };
 
 export default HomePage;
