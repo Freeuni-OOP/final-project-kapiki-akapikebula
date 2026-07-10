@@ -15,18 +15,15 @@ function SearchResultsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ფილტრების რეალური State-ები, რაც API-ზე იგზავნება
     const [appliedMinPrice, setAppliedMinPrice] = useState(undefined);
     const [appliedMaxPrice, setAppliedMaxPrice] = useState(undefined);
-    const [sortOption, setSortOption] = useState('name_asc'); // საწყისი სორტირება
+    const [sortOption, setSortOption] = useState('name_asc');
 
-    // ინპუტების დროებითი State-ები (რომ ყოველ ციფრზე არ გააგზავნოს მოთხოვნა)
     const [minInput, setMinInput] = useState('');
     const [maxInput, setMaxInput] = useState('');
 
     const trimmedQuery = query.trim();
 
-    // ახალი საძიებო სიტყვის დროს გვერდი და ფილტრები თავიდან უნდა დაიწყოს
     const [prevQuery, setPrevQuery] = useState(query);
     if (query !== prevQuery) {
         setPrevQuery(query);
@@ -76,7 +73,7 @@ function SearchResultsPage() {
             } catch (err) {
                 if (cancelled) return;
                 console.error('Search results error:', err);
-                setError('შედეგების ჩატვირთვა ვერ მოხერხდა — შეამოწმეთ სერვერთან კავშირი');
+                setError('There as a problem with loading products.');
                 setResults([]);
             } finally {
                 if (!cancelled) setLoading(false);
@@ -111,31 +108,30 @@ function SearchResultsPage() {
     return (
         <div style={styles.container}>
             <h1 style={styles.heading}>
-                ძიების შედეგები: „{query}“
+                Search Results: „{query}“
                 {trimmedQuery && !loading && !error && <span style={styles.count}> ({totalElements})</span>}
             </h1>
 
-            {!trimmedQuery && <div style={styles.info}>საძიებო სიტყვა არ არის მითითებული</div>}
+            {!trimmedQuery && <div style={styles.info}>No Query Mentioned</div>}
 
             {trimmedQuery && (
                 <div style={styles.mainLayout}>
-                    {/* 🛠️ მარცხენა პანელი: ფილტრები და სორტირება */}
                     <aside style={styles.sidebar}>
                         <div style={styles.filterGroup}>
-                            <label style={styles.filterLabel}>სორტირება</label>
+                            <label style={styles.filterLabel}>Sort</label>
                             <select value={sortOption} onChange={handleSortChange} style={styles.select}>
-                                <option value="name_asc">სახელის მიხედვით (A-Z)</option>
-                                <option value="price_asc">ფასი: ზრდადობით ⬆</option>
-                                <option value="price_desc">ფასი: კლებადობით ⬇</option>
+                                <option value="name_asc">By Name(A-Z)</option>
+                                <option value="price_asc">Price: Ascending ⬆</option>
+                                <option value="price_desc">Price: Descending ⬇</option>
                             </select>
                         </div>
 
                         <form onSubmit={handleFilterSubmit} style={styles.filterGroup}>
-                            <label style={styles.filterLabel}>ფასის დიაპაზონი</label>
+                            <label style={styles.filterLabel}>Price Range</label>
                             <div style={styles.priceInputs}>
                                 <input
                                     type="number"
-                                    placeholder="დან"
+                                    placeholder="From"
                                     value={minInput}
                                     onChange={(e) => setMinInput(e.target.value)}
                                     style={styles.priceInput}
@@ -143,24 +139,23 @@ function SearchResultsPage() {
                                 <span style={{ color: '#64748b' }}>-</span>
                                 <input
                                     type="number"
-                                    placeholder="მდე"
+                                    placeholder="To"
                                     value={maxInput}
                                     onChange={(e) => setMaxInput(e.target.value)}
                                     style={styles.priceInput}
                                 />
                             </div>
-                            <button type="submit" style={styles.filterBtn}>გაფილტვრა</button>
+                            <button type="submit" style={styles.filterBtn}>Filter</button>
                         </form>
                     </aside>
 
-                    {/* 📦 მარჯვენა პანელი: პროდუქტების შედეგები */}
                     <div style={styles.contentArea}>
-                        {loading && <div style={styles.info}>იტვირთება...</div>}
+                        {loading && <div style={styles.info}>loading...</div>}
 
                         {!loading && error && <div style={styles.errorInfo}>{error}</div>}
 
                         {!loading && !error && results.length === 0 && (
-                            <div style={styles.info}>მოცემული ფილტრებით პროდუქტები ვერ მოიძებნა.</div>
+                            <div style={styles.info}>No Products Found.</div>
                         )}
 
                         {!loading && !error && results.length > 0 && (
@@ -187,7 +182,7 @@ function SearchResultsPage() {
                                             disabled={page === 0}
                                             style={{ ...styles.pageBtn, ...(page === 0 ? styles.pageBtnDisabled : {}) }}
                                         >
-                                            ← წინა
+                                            ← previous
                                         </button>
                                         <span style={styles.pageInfo}>{page + 1} / {totalPages}</span>
                                         <button
@@ -195,7 +190,7 @@ function SearchResultsPage() {
                                             disabled={page >= totalPages - 1}
                                             style={{ ...styles.pageBtn, ...(page >= totalPages - 1 ? styles.pageBtnDisabled : {}) }}
                                         >
-                                            შემდეგი →
+                                            next →
                                         </button>
                                     </div>
                                 )}
@@ -237,7 +232,7 @@ const styles = {
         borderRadius: '12px',
         padding: '20px',
         position: 'sticky',
-        top: '90px', // Navbar-ის ქვეშ რომ ლამაზად გაჩერდეს სქროლისას
+        top: '90px',
         boxSizing: 'border-box',
     },
     contentArea: {
