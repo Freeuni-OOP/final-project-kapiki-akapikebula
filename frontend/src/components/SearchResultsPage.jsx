@@ -17,9 +17,6 @@ function SearchResultsPage() {
 
     const trimmedQuery = query.trim();
 
-    // ახალი საძიებო სიტყვის დროს გვერდი თავიდან უნდა დაიწყოს.
-    // ეს კეთდება render-ის დროს (არა useEffect-ში), რომ არ დაგვჭირდეს
-    // setState-ის სინქრონული გამოძახება ეფექტის სხეულში.
     const [prevQuery, setPrevQuery] = useState(query);
     if (query !== prevQuery) {
         setPrevQuery(query);
@@ -53,7 +50,6 @@ function SearchResultsPage() {
             }
         };
 
-        // ვიძახებთ შექმნილ ფუნქციას
         fetchData();
 
         return () => {
