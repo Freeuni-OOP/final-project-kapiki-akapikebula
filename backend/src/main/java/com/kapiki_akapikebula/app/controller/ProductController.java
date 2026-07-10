@@ -26,7 +26,6 @@ public class ProductController {
         this.productSearchService = productSearchService;
     }
 
-    // 🟢 1. ახალი ენდფოინთი ჰოუმ ფეიჯისთვის (Spring პირდაპირ ამას დაამთხვევს და 400-ს აღარ ამოაგდებს)
     @GetMapping("/home-products")
     public ResponseEntity<List<MatchedProductDTO>> getHomeProducts() {
         return ResponseEntity.ok(productService.getMatchedProductsForHomePage());
@@ -67,7 +66,7 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<ProductSearchResponse>> search(
+    public ResponseEntity<?> search(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
@@ -76,9 +75,15 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        Page<ProductSearchResponse> results = productSearchService.search(
-                query, minPrice, maxPrice, sortBy, sortDir, page, size
-        );
-        return ResponseEntity.ok(results);
+        try {
+            Page<ProductSearchResponse> results = productSearchService.search(
+                    query, minPrice, maxPrice, sortBy, sortDir, page, size
+            );
+            return ResponseEntity.ok(results);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred while searching."));
+        }
     }
 }

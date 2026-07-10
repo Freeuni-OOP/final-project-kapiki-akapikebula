@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import SearchBar from './SearchBar.jsx';
 
 function Navbar({ user, setUser }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -29,6 +30,8 @@ function Navbar({ user, setUser }) {
                 <Link to="/" style={styles.logo}>
                     🪙 <span style={{ color: '#2563eb' }}>Kapiki</span> Akapikebula
                 </Link>
+
+                <SearchBar />
 
                 <div style={styles.menu}>
                     {user ? (

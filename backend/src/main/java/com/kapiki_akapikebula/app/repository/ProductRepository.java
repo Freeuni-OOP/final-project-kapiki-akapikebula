@@ -19,12 +19,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Step 1: get a page of matching product IDs — pure SQL, no collection join,
     // so pagination and sorting work correctly at the DB level
     @Query("""
-        SELECT DISTINCT p.id FROM Product p
+        SELECT p.id FROM Product p
         JOIN p.shopProducts sp
         WHERE (:query IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%'))
                                OR LOWER(p.brand) LIKE LOWER(CONCAT('%', :query, '%')))
           AND (:minPrice IS NULL OR sp.price >= :minPrice)
           AND (:maxPrice IS NULL OR sp.price <= :maxPrice)
+        GROUP BY p.id
     """)
     Page<Long> searchIds(
             @Param("query") String query,
@@ -83,12 +84,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByNameContainingIgnoreCase(String token);
 
     @Query("SELECT p.id AS id, p.name AS name, p.imageUrl AS imageUrl, " +
-        "MIN(sp.price) AS minPrice, MAX(sp.price) AS maxPrice, " +
-        "COUNT(sp.id) AS storesCount " +
-        "FROM Product p " +
-        "JOIN p.shopProducts sp " +
-        "GROUP BY p.id, p.name, p.imageUrl " +
-        "HAVING COUNT(sp.id) > 1")
-List<MatchedProductDTO> findMatchedProductsForHomePage();
+            "MIN(sp.price) AS minPrice, MAX(sp.price) AS maxPrice, " +
+            "COUNT(sp.id) AS storesCount " +
+            "FROM Product p " +
+            "JOIN p.shopProducts sp " +
+            "GROUP BY p.id, p.name, p.imageUrl " +
+            "HAVING COUNT(sp.id) > 1")
+    List<MatchedProductDTO> findMatchedProductsForHomePage();
 
 }
