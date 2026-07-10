@@ -9,10 +9,27 @@ function SettingsPage({ user, setUser }) {
     const [errorMessage, setErrorMessage] = useState('');
 
     const getAuthHeaders = () => {
-        const token = localStorage.getItem('token');
+        const storedTokenData = localStorage.getItem('user');
+
+        if (!storedTokenData) {
+            return { 'Content-Type': 'application/json' };
+        }
+
+        let actualToken = storedTokenData;
+
+        // Check if the stored string is actually a JSON object wrapper
+        if (storedTokenData.startsWith('{')) {
+            try {
+                const parsedData = JSON.parse(storedTokenData);
+                actualToken = parsedData.token; // Pull just the "eyJhbGci..." string out
+            } catch (err) {
+                console.error("Failed to parse token data from localStorage", err);
+            }
+        }
+
         return {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${actualToken}`
         };
     };
 
@@ -23,7 +40,7 @@ function SettingsPage({ user, setUser }) {
         setErrorMessage('');
 
         try {
-            const response = await fetch('http://localhost:8080/api/users/update-username', {
+            const response = await fetch('http://localhost:8080/api/auth/update-username', {
                 method: 'PUT',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ username })
@@ -77,7 +94,7 @@ function SettingsPage({ user, setUser }) {
         if (!confirmDelete) return;
 
         try {
-            const response = await fetch('http://localhost:8080/api/users/delete', {
+            const response = await fetch('http://localhost:8080/api/auth/delete', {
                 method: 'DELETE',
                 headers: getAuthHeaders()
             });
