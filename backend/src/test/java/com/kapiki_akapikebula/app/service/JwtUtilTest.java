@@ -18,7 +18,7 @@ public class JwtUtilTest {
 
     @Test
     void generateToken_ShouldReturnValidToken() {
-        String token = jwtUtil.generateToken("test@user.com");
+        String token = jwtUtil.generateToken("test@user.com", "test");
         assertNotNull(token);
         assertTrue(jwtUtil.validateToken(token));
     }
@@ -26,7 +26,7 @@ public class JwtUtilTest {
     @Test
     void getEmailFromToken_ShouldReturnCorrectEmail() {
         String expectedEmail = "test@user.com";
-        String token = jwtUtil.generateToken(expectedEmail);
+        String token = jwtUtil.generateToken(expectedEmail, "test");
         String extractedEmail = jwtUtil.getEmailFromToken(token);
         assertEquals(expectedEmail, extractedEmail);
     }
