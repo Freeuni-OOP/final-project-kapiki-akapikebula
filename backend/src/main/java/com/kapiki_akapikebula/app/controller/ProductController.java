@@ -2,7 +2,7 @@ package com.kapiki_akapikebula.app.controller;
 
 import com.kapiki_akapikebula.app.dto.ProductListingResponse;
 import com.kapiki_akapikebula.app.dto.ProductSearchResponse;
-import com.kapiki_akapikebula.app.dto.MatchedProductDTO; // 👈 შემოვიტანოთ DTO
+import com.kapiki_akapikebula.app.dto.MatchedProductDTO; 
 import com.kapiki_akapikebula.app.service.ProductSearchService;
 import com.kapiki_akapikebula.app.service.ProductService;
 import org.springframework.data.domain.Page;
