@@ -3,13 +3,14 @@ package com.kapiki_akapikebula.app.controller;
 import com.kapiki_akapikebula.app.dto.ProductListingResponse;
 import com.kapiki_akapikebula.app.dto.ProductSearchResponse;
 import com.kapiki_akapikebula.app.service.ProductSearchService;
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.*;
 import com.kapiki_akapikebula.app.service.ProductService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -24,17 +25,43 @@ public class ProductController {
         this.productSearchService = productSearchService;
     }
 
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProductById(@PathVariable long id) {
+        try {
+            return ResponseEntity.ok(productService.getProductById(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+
     @GetMapping("/{id}/listings")
     public ResponseEntity<?> getProductListings(@PathVariable long id) {
         try {
             List<ProductListingResponse> listings = productService.getProductListings(id);
             return ResponseEntity.ok(listings);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An unexpected error occurred while fetching listings.");
-        }    
+            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred while fetching listings."));
+        }
     }
+
+
+    @GetMapping("/{id}/history")
+    public ResponseEntity<?> getProductHistory(@PathVariable long id) {
+        try {
+            return ResponseEntity.ok(productService.getProductHistory(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
 
     @GetMapping("/search")
     public ResponseEntity<Page<ProductSearchResponse>> search(
