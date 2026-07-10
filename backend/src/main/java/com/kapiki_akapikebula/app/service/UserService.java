@@ -37,18 +37,30 @@ public class UserService {
 
     @Transactional
     public UserResponse registerUser(RegisterRequest request) {
-        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
-        if (existingUser.isPresent()) {
-            throw new RuntimeException("A user with this email address already exists!");
-        }
+        Optional<User> existingUserOpt = userRepository.findByEmail(request.getEmail());
 
-        // Save the disabled user
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setUsername(request.getUsername());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setCreatedAt(LocalDateTime.now());
-        user.setEnabled(false);
+        User user;
+
+        if (existingUserOpt.isPresent()) {
+            User existingUser = existingUserOpt.get();
+
+            // If the user is active, block them like normal
+            if (existingUser.isEnabled()) {
+                throw new RuntimeException("A user with this email address already exists!");
+            }
+
+            // If they are NOT active (soft-deleted), we overwrite their old profile with the new info
+            user = existingUser;
+            user.setUsername(request.getUsername());
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        } else {
+            user = new User();
+            user.setEmail(request.getEmail());
+            user.setUsername(request.getUsername());
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            user.setCreatedAt(LocalDateTime.now());
+            user.setEnabled(false);
+        }
 
         User savedUser = userRepository.save(user);
 
