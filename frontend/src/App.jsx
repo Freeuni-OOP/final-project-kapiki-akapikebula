@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage.jsx';
 import ProductDetailsPage from './pages/ProductDetailsPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import WatchlistPage from './pages/WatchlistPage.jsx';
+import SearchResultsPage from './components/SearchResultsPage.jsx';
 
 function App() {
     const [user, setUser] = useState(() => {
@@ -26,6 +27,7 @@ function App() {
                         <Route path="/login" element={<LoginPage setUser={setUser} />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/product/:id" element={<ProductDetailsPage />} />
+                        <Route path="/search" element={<SearchResultsPage />} />
                         <Route path="/settings" element={<SettingsPage user={user} setUser={setUser} />} />
                         <Route path="/watchlist" element={<WatchlistPage user={user} />} />
                         <Route path="/cart" element={<div style={{ padding: '40px', textAlign: 'center' }}>🛒 Cart Page</div>} />
