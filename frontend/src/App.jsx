@@ -9,7 +9,7 @@ import RegisterPage from './pages/RegisterPage.jsx';
 import ProductDetailsPage from './pages/ProductDetailsPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import WatchlistPage from './pages/WatchlistPage.jsx';
-import SearchResultsPage from './components/SearchResultsPage.jsx';
+import SearchResultsPage from './pages/SearchResultsPage.jsx';
 
 function App() {
     const [user, setUser] = useState(() => {
