@@ -16,8 +16,6 @@ import java.util.Optional;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    // Step 1: get a page of matching product IDs — pure SQL, no collection join,
-    // so pagination and sorting work correctly at the DB level
     @Query("""
         SELECT p.id FROM Product p
         JOIN p.shopProducts sp
@@ -34,8 +32,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             Pageable pageable
     );
 
-    // When sorting by price, we need the DB to compute lowestPrice per product
-// and sort by it — otherwise we can only sort within the current page in Java
     @Query("""
     SELECT p.id FROM Product p
     JOIN p.shopProducts sp
@@ -70,8 +66,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             Pageable pageable
     );
 
-    // Step 2: fetch full product data (with shop listings) for a specific list of IDs
-    // IN clause means one query total, not N queries
     @Query("""
         SELECT DISTINCT p FROM Product p
         JOIN FETCH p.shopProducts sp

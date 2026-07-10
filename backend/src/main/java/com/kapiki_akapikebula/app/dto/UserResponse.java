@@ -6,9 +6,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-//კაროჩე ეს არის ის რასაც API დააბრუნებს register ის მერე და თუ
-// user entity ში სხვა ველებსაც დაამატებთ
-//აქაც უნდა დაამტო მაშინ UserService.registerUser() მინიჭება.
 @Getter
 @Setter
 @AllArgsConstructor

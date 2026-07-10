@@ -19,7 +19,6 @@ public class ProductSearchService {
 
     private final ProductRepository productRepository;
 
-    // "price" now works because we handle it manually after fetching
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("name", "brand", "price");
 
     public Page<ProductSearchResponse> search(
@@ -31,7 +30,6 @@ public class ProductSearchService {
             int page,
             int size
     ) {
-        // Clean up inputs
         String keyword = (query == null || query.isBlank()) ? null : query.trim();
         boolean sortByPrice = "price".equalsIgnoreCase(sortBy);
 
@@ -39,9 +37,8 @@ public class ProductSearchService {
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
 
-        // For price sorting, we sort in Java after fetching (explained below).
-        // For name/brand, we let the DB sort correctly.
-        String dbSortField = sortByPrice ? "name" : // placeholder — overridden in Java
+
+        String dbSortField = sortByPrice ? "name" :
                 (ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : "name");
 
         Pageable pageable = PageRequest.of(
@@ -50,13 +47,10 @@ public class ProductSearchService {
                 Sort.by(direction, dbSortField)
         );
 
-        // --- Step 1: get a page of matching IDs from the DB ---
-        // This is a simple query with no collection join, so SQL-level
-        // pagination works correctly here
+
         Page<Long> idPage;
 
         if (sortByPrice) {
-            // Use unsorted pageable — ORDER BY is already hardcoded in the query itself
             Pageable unsortedPageable = PageRequest.of(
                     Math.max(page, 0),
                     Math.min(size, 100)
@@ -74,12 +68,9 @@ public class ProductSearchService {
             return new PageImpl<>(List.of(), pageable, 0);
         }
 
-        // --- Step 2: fetch full product + shop data for those IDs ---
-        // One query with IN clause — no N+1 problem
+
         List<Product> products = productRepository.findByIdsWithListings(idPage.getContent());
 
-        // Restore the original ID order from Step 1, because the IN clause
-        // doesn't guarantee order
         Map<Long, Product> productById = products.stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
 
@@ -88,7 +79,6 @@ public class ProductSearchService {
                 .filter(Objects::nonNull)
                 .toList();
 
-        // --- Step 3: convert to DTOs ---
         List<ProductSearchResponse> results = orderedProducts.stream()
                 .map(product -> {
 
@@ -104,7 +94,6 @@ public class ProductSearchService {
                             ))
                             .toList();
 
-                    // Cheapest listing is first since we sorted above
                     BigDecimal lowestPrice = listingDtos.isEmpty()
                             ? null
                             : listingDtos.get(0).getPrice();
@@ -120,7 +109,6 @@ public class ProductSearchService {
                 })
                 .toList();
 
-        // Wrap in a Page so the controller response includes totalPages, totalElements etc.
         return new PageImpl<>(results, pageable, idPage.getTotalElements());
     }
 }

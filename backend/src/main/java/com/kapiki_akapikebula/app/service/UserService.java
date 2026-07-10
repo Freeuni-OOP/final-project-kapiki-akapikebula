@@ -44,12 +44,10 @@ public class UserService {
         if (existingUserOpt.isPresent()) {
             User existingUser = existingUserOpt.get();
 
-            // If the user is active, block them like normal
             if (existingUser.isEnabled()) {
                 throw new RuntimeException("A user with this email address already exists!");
             }
 
-            // If they are NOT active (soft-deleted), we overwrite their old profile with the new info
             user = existingUser;
             user.setUsername(request.getUsername());
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
@@ -69,7 +67,6 @@ public class UserService {
         VerificationToken verificationToken = new VerificationToken(token, savedUser);
         tokenRepository.save(verificationToken);
 
-        // Send the verification email
         String confirmationUrl = "http://localhost:8080/api/auth/registrationConfirm?token=" + token;
         String emailBody = "Thank you for registering! Please click the link below to activate your account:\n" + confirmationUrl;
 
@@ -82,7 +79,6 @@ public class UserService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("A user with this email not found!"));
 
-        // Check if the user verified their email
         if (!user.isEnabled()) {
             throw new RuntimeException("Please verify your email address before logging in.");
         }
@@ -107,7 +103,6 @@ public class UserService {
         user.setEnabled(true);
         userRepository.save(user);
 
-        // Delete token after use to keep DB clean
         tokenRepository.delete(verificationToken);
 
         return "Account verified successfully! You can now log in.";
@@ -143,7 +138,6 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        // Marks the user as disabled so they can no longer log in, preserving data integrity.
         user.setEnabled(false);
         userRepository.save(user);
     }

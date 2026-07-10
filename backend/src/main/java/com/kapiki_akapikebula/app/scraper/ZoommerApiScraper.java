@@ -28,7 +28,6 @@ public class ZoommerApiScraper extends ApiScraper {
 
     @Override
     public StoreListing parseProduct(JsonObject p) {
-        // Step 1: extract universal fields from search JSON
         String id           = p.get("id").getAsString();
         String name         = p.get("name").getAsString();
         double price        = p.get("price").getAsDouble();
@@ -38,15 +37,11 @@ public class ZoommerApiScraper extends ApiScraper {
         String imageUrl     = p.get("imageUrl").getAsString();
         String route        = BASE_URL + "/" + p.get("route").getAsString();
 
-        // Step 2: fetch detail JSON and populate attributes
-        // listing.setAttributes(fetchAttributes(id, route));
-
         return new StoreListing(
                 id, STORE_NAME, name, price, previousPrice, inStock, imageUrl, route
         );
     }
 
-    // Private — Zoommer-specific detail fetch
     private Map<String, String> fetchAttributes(String id, String route)
             throws IOException, InterruptedException {
         System.out.println("fetching product: " + id);
